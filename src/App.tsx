@@ -121,6 +121,10 @@ function App() {
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <span>Cancel anytime</span>
               </div>
+              <div>
+              <p></p>
+              <p></p>
+            </div>
             </div>
             
                {/* Social Proof Badge - Moved to bottom of hero */}
