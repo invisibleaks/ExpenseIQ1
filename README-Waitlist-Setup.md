@@ -58,7 +58,7 @@ This document provides step-by-step instructions for setting up the waitlist fun
 
 ### 2. Test the Integration
 1. Start your development server: `npm run dev`
-2. Click any "Get Early Access" button
+2. Click any "Try It Free" button
 3. Fill out the form with test data
 4. Submit the form
 5. Check your Google Sheet - you should see the new entry
