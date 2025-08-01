@@ -104,20 +104,7 @@ function App() {
               </button>
             </div>
 
-            {/* Social Proof Badge - Moved to bottom of hero */}
-            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600/10 to-cyan-500/10 border border-purple-500/20 rounded-full px-4 py-2 mb-8">
-              <div className="flex -space-x-1">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 border-2 border-white dark:border-slate-900"></div>
-                ))}
-              </div>
-              <span className="text-sm text-gray-700 dark:text-gray-300">Trusted by 15,000+ entrepreneurs</span>
-              <div className="flex items-center space-x-1">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-            </div>
+         
 
             
             {/* Trust indicators */}
@@ -133,6 +120,20 @@ function App() {
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <span>Cancel anytime</span>
+              </div>
+            </div>
+               {/* Social Proof Badge - Moved to bottom of hero */}
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600/10 to-cyan-500/10 border border-purple-500/20 rounded-full px-4 py-2 mb-8">
+              <div className="flex -space-x-1">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 border-2 border-white dark:border-slate-900"></div>
+                ))}
+              </div>
+              <span className="text-sm text-gray-700 dark:text-gray-300">Trusted by 15,000+ entrepreneurs</span>
+              <div className="flex items-center space-x-1">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                ))}
               </div>
             </div>
           </div>
