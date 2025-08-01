@@ -121,14 +121,15 @@ function App() {
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <span>Cancel anytime</span>
               </div>
+            </div>
+            
+               {/* Social Proof Badge - Moved to bottom of hero */}
+            
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600/10 to-cyan-500/10 border border-purple-500/20 rounded-full px-4 py-2 mb-8">
               <div>
               <p></p>
               <p></p>
             </div>
-            </div>
-            
-               {/* Social Proof Badge - Moved to bottom of hero */}
-            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600/10 to-cyan-500/10 border border-purple-500/20 rounded-full px-4 py-2 mb-8">
               <div className="flex -space-x-1">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 border-2 border-white dark:border-slate-900"></div>
