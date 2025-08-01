@@ -63,7 +63,7 @@ function App() {
               </div>
               <span className="text-xl font-bold text-gray-900 dark:text-white">Expense IQ</span>
             </div>
-            
+          
             <div className="flex items-center space-x-6">
               <a href="#features" className="text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Features</a>
               <a href="#pricing" className="text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Pricing</a>
@@ -122,9 +122,7 @@ function App() {
                 <span>Cancel anytime</span>
               </div>
             </div>
-              
-          </div>
-           {/* Social Proof Badge - Moved to bottom of hero */}
+               {/* Social Proof Badge - Moved to bottom of hero */}
             <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600/10 to-cyan-500/10 border border-purple-500/20 rounded-full px-4 py-2 mb-8">
               <div className="flex -space-x-1">
                 {[1, 2, 3].map((i) => (
@@ -138,6 +136,7 @@ function App() {
                 ))}
               </div>
             </div>
+          </div>
         </div>
       </section>
 
