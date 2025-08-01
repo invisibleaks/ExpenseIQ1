@@ -111,10 +111,15 @@ function App() {
                   <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 border-2 border-white dark:border-slate-900"></div>
                 ))}
               </div>
-             
-            
+              <span className="text-sm text-gray-700 dark:text-gray-300">Trusted by 15,000+ entrepreneurs</span>
+              <div className="flex items-center space-x-1">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
             </div>
 
+            
             {/* Trust indicators */}
             <div className="flex items-center justify-center space-x-8 text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center space-x-2">
@@ -130,12 +135,6 @@ function App() {
                 <span>Cancel anytime</span>
               </div>
             </div>
-              <div className="flex items-center space-x-1">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-             <span className="text-sm text-gray-700 dark:text-gray-300">Trusted by 15,000+ entrepreneurs</span>
           </div>
         </div>
       </section>
