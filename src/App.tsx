@@ -112,11 +112,7 @@ function App() {
                 ))}
               </div>
              
-              <div className="flex items-center space-x-1">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
+            
             </div>
 
             {/* Trust indicators */}
@@ -134,6 +130,11 @@ function App() {
                 <span>Cancel anytime</span>
               </div>
             </div>
+              <div className="flex items-center space-x-1">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
              <span className="text-sm text-gray-700 dark:text-gray-300">Trusted by 15,000+ entrepreneurs</span>
           </div>
         </div>
