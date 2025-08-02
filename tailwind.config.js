@@ -6,25 +6,23 @@ export default {
     extend: {
       colors: {
         brand: {
-          // Primary colors
-          charcoal: '#1C1C1E',   // Light mode primary
-          gold: '#E5C07B',       // Dark mode primary
+          // Primary colors - Dark Teal/Slate
+          'dark-teal': '#2C3E50',     // Main dark background
+          'darker-teal': '#1A252F',   // Deeper teal for contrast
+          
+          // Accent colors - Warm Beige/Cream
+          'warm-beige': '#E8DCC6',    // Primary accent/CTA color
+          'light-beige': '#F5F1E8',   // Lighter beige variant
+          'cream': '#F8F6F0',         // Lightest cream
           
           // Secondary colors
-          'secondary-light': '#8E8E93',  // Light mode secondary
-          'secondary-dark': '#D1D1D6',   // Dark mode secondary
-          
-          // Accent/CTA colors
-          amber: '#D97706',      // Light mode accent
-          'soft-gold': '#FBBF24', // Dark mode accent
-          
-          // Background colors
-          ivory: '#F4F4F6',      // Light mode background
-          'dark-bg': '#0E0E10',  // Dark mode background
+          'muted-teal': '#34495E',    // Lighter teal for cards/sections
+          'soft-gray': '#95A5A6',     // Muted gray for secondary text
           
           // Text colors
-          'text-primary': '#1A1A1A',    // Light mode text
-          'text-primary-dark': '#F5F5F5' // Dark mode text
+          'text-light': '#FFFFFF',    // White text on dark backgrounds
+          'text-dark': '#2C3E50',     // Dark text on light backgrounds
+          'text-muted': '#7F8C8D'     // Muted text color
         }
       }
     }

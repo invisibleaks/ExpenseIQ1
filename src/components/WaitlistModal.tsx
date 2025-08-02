@@ -202,7 +202,7 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
         <button
           onClick={onClose}
           disabled={isSubmitting}
-          className="absolute top-4 right-4 p-2 text-brand-secondary-light hover:text-brand-amber dark:hover:text-brand-gold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="absolute top-4 right-4 p-2 text-brand-text-muted hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Close modal"
         >
           <X className="w-5 h-5" />
@@ -213,13 +213,13 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
             <>
               {/* Header */}
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-r from-brand-charcoal to-brand-amber dark:from-brand-gold dark:to-brand-soft-gold rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-brand-dark-teal to-brand-warm-beige rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Mail className="w-8 h-8 text-white" />
                 </div>
-                <h2 id="waitlist-modal-title" className="text-2xl font-bold text-brand-text-primary dark:text-brand-text-primary-dark mb-2">
+                <h2 id="waitlist-modal-title" className="text-2xl font-bold text-brand-text-dark dark:text-brand-text-light mb-2">
                   Try It Free
                 </h2>
-                <p className="text-brand-secondary-light dark:text-brand-secondary-dark">
+                <p className="text-brand-text-muted dark:text-brand-soft-gray">
                   Be the first to know when Expense IQ launches and get exclusive early access.
                 </p>
               </div>
@@ -228,11 +228,11 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
               <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                 {/* Name Field */}
                 <div>
-                  <label htmlFor="waitlist-name" className="block text-sm font-medium text-brand-text-primary dark:text-brand-text-primary-dark mb-2">
+                  <label htmlFor="waitlist-name" className="block text-sm font-medium text-brand-text-dark dark:text-brand-text-light mb-2">
                     Name <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-brand-secondary-light" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-brand-text-muted" />
                     <input
                       type="text"
                       id="waitlist-name"
@@ -241,8 +241,8 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
                       onChange={handleInputChange}
                       onBlur={handleBlur}
                       disabled={isSubmitting}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-white dark:bg-brand-dark-bg text-brand-text-primary dark:text-brand-text-primary-dark placeholder-brand-secondary-light dark:placeholder-brand-secondary-dark focus:ring-2 focus:ring-brand-amber focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                        errors.name ? 'border-red-500' : 'border-brand-secondary-light/50 dark:border-brand-secondary-dark/50'
+                      className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-white dark:bg-brand-darker-teal text-brand-text-dark dark:text-brand-text-light placeholder-brand-text-muted dark:placeholder-brand-soft-gray focus:ring-2 focus:ring-brand-warm-beige focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                        errors.name ? 'border-red-500' : 'border-brand-soft-gray/50 dark:border-brand-muted-teal/50'
                       }`}
                       placeholder="Enter your full name"
                       required
@@ -259,11 +259,11 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
 
                 {/* Email Field */}
                 <div>
-                  <label htmlFor="waitlist-email" className="block text-sm font-medium text-brand-text-primary dark:text-brand-text-primary-dark mb-2">
+                  <label htmlFor="waitlist-email" className="block text-sm font-medium text-brand-text-dark dark:text-brand-text-light mb-2">
                     Email <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-brand-secondary-light" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-brand-text-muted" />
                     <input
                       type="email"
                       id="waitlist-email"
@@ -272,8 +272,8 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
                       onChange={handleInputChange}
                       onBlur={handleBlur}
                       disabled={isSubmitting}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-white dark:bg-brand-dark-bg text-brand-text-primary dark:text-brand-text-primary-dark placeholder-brand-secondary-light dark:placeholder-brand-secondary-dark focus:ring-2 focus:ring-brand-amber focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                        errors.email ? 'border-red-500' : 'border-brand-secondary-light/50 dark:border-brand-secondary-dark/50'
+                      className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-white dark:bg-brand-darker-teal text-brand-text-dark dark:text-brand-text-light placeholder-brand-text-muted dark:placeholder-brand-soft-gray focus:ring-2 focus:ring-brand-warm-beige focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                        errors.email ? 'border-red-500' : 'border-brand-soft-gray/50 dark:border-brand-muted-teal/50'
                       }`}
                       placeholder="Enter your email address"
                       required
@@ -301,7 +301,7 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
                 <button
                   type="submit"
                   disabled={isSubmitting || !!errors.name || !!errors.email}
-                  className="w-full bg-gradient-to-r from-brand-charcoal to-brand-amber dark:from-brand-gold dark:to-brand-soft-gold text-white py-3 px-6 rounded-xl font-semibold hover:from-brand-charcoal/90 hover:to-brand-amber/90 dark:hover:from-brand-gold/90 dark:hover:to-brand-soft-gold/90 focus:ring-2 focus:ring-brand-amber focus:ring-offset-2 dark:focus:ring-offset-brand-dark-bg transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+                  className="w-full bg-gradient-to-r from-brand-dark-teal to-brand-warm-beige text-white py-3 px-6 rounded-xl font-semibold hover:from-brand-dark-teal/90 hover:to-brand-warm-beige/90 focus:ring-2 focus:ring-brand-warm-beige focus:ring-offset-2 dark:focus:ring-offset-brand-dark-teal transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
                   aria-describedby="submit-button-description"
                 >
                   {isSubmitting ? (
@@ -315,7 +315,7 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
                 </button>
 
                 {/* Privacy Note */}
-                <p className="text-xs text-brand-secondary-light dark:text-brand-secondary-dark text-center">
+                <p className="text-xs text-brand-text-muted dark:text-brand-soft-gray text-center">
                   We respect your privacy. No spam, unsubscribe anytime.
                 </p>
               </form>
@@ -329,10 +329,10 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
               <h2 className="text-2xl font-bold text-brand-text-primary dark:text-brand-text-primary-dark mb-4">
                 You're on the list!
               </h2>
-              <p className="text-brand-secondary-light dark:text-brand-secondary-dark mb-6">
+              <p className="text-brand-text-muted dark:text-brand-soft-gray mb-6">
                 We'll notify you before launch.
               </p>
-              <p className="text-sm text-brand-secondary-light dark:text-brand-secondary-dark">
+              <p className="text-sm text-brand-text-muted dark:text-brand-soft-gray">
                 This window will close automatically in a few seconds.
               </p>
             </div>

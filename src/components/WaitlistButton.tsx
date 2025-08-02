@@ -17,8 +17,8 @@ const WaitlistButton: React.FC<WaitlistButtonProps> = ({
   const baseClasses = "group font-semibold transition-all transform hover:scale-105 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 flex items-center justify-center space-x-2 rounded-xl";
   
   const variantClasses = {
-    primary: "bg-gradient-to-r from-brand-charcoal to-brand-amber dark:from-brand-gold dark:to-brand-soft-gold text-white hover:from-brand-charcoal/90 hover:to-brand-amber/90 dark:hover:from-brand-gold/90 dark:hover:to-brand-soft-gold/90 focus:ring-brand-amber shadow-lg hover:shadow-xl",
-    secondary: "border-2 border-brand-secondary-light dark:border-brand-secondary-dark text-brand-secondary-light dark:text-brand-secondary-dark hover:border-brand-amber hover:text-brand-amber dark:hover:text-brand-gold focus:ring-brand-amber"
+    primary: "bg-gradient-to-r from-brand-dark-teal to-brand-warm-beige text-white hover:from-brand-dark-teal/90 hover:to-brand-warm-beige/90 focus:ring-brand-warm-beige shadow-lg hover:shadow-xl",
+    secondary: "border-2 border-brand-soft-gray dark:border-brand-muted-teal text-brand-text-muted dark:text-brand-soft-gray hover:border-brand-dark-teal hover:text-brand-dark-teal dark:hover:border-brand-warm-beige dark:hover:text-brand-warm-beige focus:ring-brand-warm-beige"
   };
   
   const sizeClasses = {
