@@ -92,7 +92,7 @@ function App() {
             </h1>
             
             <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto leading-relaxed">
-              AI-powered expense management that automatically captures, categorizes, and consolidates your business expenses across all accounts. 
+              AI-powered expense management that automatically captures, categorizes, and consolidates your business expenses across all accounts.
               <span className="text-cyan-400 font-semibold"> Save 10+ hours every month.</span>
             </p>
 
@@ -108,18 +108,18 @@ function App() {
 
             
             {/* Trust indicators */}
-            <div className="flex items-center justify-center space-x-8 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center justify-center space-x-8 text-sm">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-gray-600 dark:text-gray-300">No credit card required</span>
+                <span className="text-gray-700 dark:text-gray-200">No credit card required</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-gray-600 dark:text-gray-300">14-day free trial</span>
+                <span className="text-gray-700 dark:text-gray-200">14-day free trial</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-gray-600 dark:text-gray-300">Cancel anytime</span>
+                <span className="text-gray-700 dark:text-gray-200">Cancel anytime</span>
               </div>
             </div>
             
@@ -130,7 +130,7 @@ function App() {
                   <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 border-2 border-white dark:border-slate-900"></div>
                 ))}
               </div>
-              <span className="text-sm text-gray-600 dark:text-gray-300">Trusted by 15,000+ entrepreneurs</span>
+              <span className="text-sm text-gray-700 dark:text-gray-200">Trusted by 15,000+ entrepreneurs</span>
               <div className="flex items-center space-x-1">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
@@ -148,7 +148,7 @@ function App() {
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               See Expense IQ in Action
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
               Watch how our AI transforms chaos into organized, tax-ready expense reports in seconds
             </p>
           </div>
