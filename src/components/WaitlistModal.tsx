@@ -202,7 +202,7 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
         <button
           onClick={onClose}
           disabled={isSubmitting}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="absolute top-4 right-4 p-2 text-brand-secondary-light hover:text-brand-amber dark:hover:text-brand-gold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Close modal"
         >
           <X className="w-5 h-5" />
@@ -213,13 +213,13 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
             <>
               {/* Header */}
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-brand-charcoal to-brand-amber dark:from-brand-gold dark:to-brand-soft-gold rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Mail className="w-8 h-8 text-white" />
                 </div>
-                <h2 id="waitlist-modal-title" className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <h2 id="waitlist-modal-title" className="text-2xl font-bold text-brand-text-primary dark:text-brand-text-primary-dark mb-2">
                   Try It Free
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-brand-secondary-light dark:text-brand-secondary-dark">
                   Be the first to know when Expense IQ launches and get exclusive early access.
                 </p>
               </div>
@@ -228,11 +228,11 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
               <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                 {/* Name Field */}
                 <div>
-                  <label htmlFor="waitlist-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="waitlist-name" className="block text-sm font-medium text-brand-text-primary dark:text-brand-text-primary-dark mb-2">
                     Name <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-brand-secondary-light" />
                     <input
                       type="text"
                       id="waitlist-name"
@@ -241,8 +241,8 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
                       onChange={handleInputChange}
                       onBlur={handleBlur}
                       disabled={isSubmitting}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                        errors.name ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'
+                      className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-white dark:bg-brand-dark-bg text-brand-text-primary dark:text-brand-text-primary-dark placeholder-brand-secondary-light dark:placeholder-brand-secondary-dark focus:ring-2 focus:ring-brand-amber focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                        errors.name ? 'border-red-500' : 'border-brand-secondary-light/50 dark:border-brand-secondary-dark/50'
                       }`}
                       placeholder="Enter your full name"
                       required
@@ -259,11 +259,11 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
 
                 {/* Email Field */}
                 <div>
-                  <label htmlFor="waitlist-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="waitlist-email" className="block text-sm font-medium text-brand-text-primary dark:text-brand-text-primary-dark mb-2">
                     Email <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-brand-secondary-light" />
                     <input
                       type="email"
                       id="waitlist-email"
@@ -272,8 +272,8 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
                       onChange={handleInputChange}
                       onBlur={handleBlur}
                       disabled={isSubmitting}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                        errors.email ? 'border-red-500' : 'border-gray-300 dark:border-slate-600'
+                      className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-white dark:bg-brand-dark-bg text-brand-text-primary dark:text-brand-text-primary-dark placeholder-brand-secondary-light dark:placeholder-brand-secondary-dark focus:ring-2 focus:ring-brand-amber focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                        errors.email ? 'border-red-500' : 'border-brand-secondary-light/50 dark:border-brand-secondary-dark/50'
                       }`}
                       placeholder="Enter your email address"
                       required
@@ -301,7 +301,7 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
                 <button
                   type="submit"
                   disabled={isSubmitting || !!errors.name || !!errors.email}
-                  className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white py-3 px-6 rounded-xl font-semibold hover:from-purple-700 hover:to-cyan-600 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+                  className="w-full bg-gradient-to-r from-brand-charcoal to-brand-amber dark:from-brand-gold dark:to-brand-soft-gold text-white py-3 px-6 rounded-xl font-semibold hover:from-brand-charcoal/90 hover:to-brand-amber/90 dark:hover:from-brand-gold/90 dark:hover:to-brand-soft-gold/90 focus:ring-2 focus:ring-brand-amber focus:ring-offset-2 dark:focus:ring-offset-brand-dark-bg transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
                   aria-describedby="submit-button-description"
                 >
                   {isSubmitting ? (
@@ -315,7 +315,7 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
                 </button>
 
                 {/* Privacy Note */}
-                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                <p className="text-xs text-brand-secondary-light dark:text-brand-secondary-dark text-center">
                   We respect your privacy. No spam, unsubscribe anytime.
                 </p>
               </form>
@@ -326,13 +326,13 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
               <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl font-bold text-brand-text-primary dark:text-brand-text-primary-dark mb-4">
                 You're on the list!
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-brand-secondary-light dark:text-brand-secondary-dark mb-6">
                 We'll notify you before launch.
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-brand-secondary-light dark:text-brand-secondary-dark">
                 This window will close automatically in a few seconds.
               </p>
             </div>

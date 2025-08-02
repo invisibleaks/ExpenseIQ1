@@ -53,27 +53,27 @@ function App() {
 
   return (
 <div className={darkMode ? 'dark' : ''}>
-  <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-300">
+  <div className="min-h-screen bg-brand-ivory dark:bg-brand-dark-bg transition-colors duration-300">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/20 dark:border-slate-700/50">
+      <nav className="fixed top-0 w-full z-50 bg-white/90 dark:bg-brand-dark-bg/90 backdrop-blur-md border-b border-brand-secondary-light/20 dark:border-brand-secondary-dark/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-400 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-brand-charcoal to-brand-amber dark:from-brand-gold dark:to-brand-soft-gold rounded-lg flex items-center justify-center">
                 <Brain className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white">Expense IQ</span>
+              <span className="text-xl font-bold text-brand-text-primary dark:text-brand-text-primary-dark">Expense IQ</span>
             </div>
           
             <div className="hidden sm:flex items-center space-x-6">
-              <a href="#features" className="text-gray-700 dark:text-gray-200 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Features</a>
-              <a href="#pricing" className="text-gray-700 dark:text-gray-200 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Pricing</a>
+              <a href="#features" className="text-brand-secondary-light dark:text-brand-secondary-dark hover:text-brand-amber dark:hover:text-brand-gold transition-colors">Features</a>
+              <a href="#pricing" className="text-brand-secondary-light dark:text-brand-secondary-dark hover:text-brand-amber dark:hover:text-brand-gold transition-colors">Pricing</a>
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className="p-2 rounded-lg bg-gray-200/80 dark:bg-slate-700/80 hover:bg-gray-300/80 dark:hover:bg-slate-600/80 transition-colors"
+                className="p-2 rounded-lg bg-brand-secondary-light/20 dark:bg-brand-secondary-dark/20 hover:bg-brand-secondary-light/30 dark:hover:bg-brand-secondary-dark/30 transition-colors"
                 aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
               >
-                {darkMode ? <Sun className="w-4 h-4 text-yellow-500" /> : <Moon className="w-4 h-4 text-slate-600" />}
+                {darkMode ? <Sun className="w-4 h-4 text-brand-gold" /> : <Moon className="w-4 h-4 text-brand-charcoal" />}
               </button>
               <WaitlistButton onClick={openWaitlistModal} size="sm" />
             </div>
@@ -85,21 +85,21 @@ function App() {
       <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-brand-text-primary dark:text-brand-text-primary-dark mb-4 sm:mb-6 leading-tight">
               Stop Drowning in
-              <span className="bg-gradient-to-r from-purple-600 via-purple-500 to-cyan-400 bg-clip-text text-transparent block">
+              <span className="bg-gradient-to-r from-brand-charcoal via-brand-amber to-brand-charcoal dark:from-brand-gold dark:via-brand-soft-gold dark:to-brand-gold bg-clip-text text-transparent block">
                 Expense Receipts
               </span>
             </h1>
             
-            <p className="text-lg sm:text-xl md:text-2xl text-gray-900 dark:text-gray-100 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">
-              <span className="text-gray-900 dark:text-gray-100">AI-powered expense management that automatically captures, categorizes, and consolidates your business expenses across all accounts.</span>
-              <span className="text-cyan-600 dark:text-cyan-400 font-semibold"> Save 10+ hours every month.</span>
+            <p className="text-lg sm:text-xl md:text-2xl text-brand-text-primary dark:text-brand-text-primary-dark mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">
+              <span className="text-brand-text-primary dark:text-brand-text-primary-dark">AI-powered expense management that automatically captures, categorizes, and consolidates your business expenses across all accounts.</span>
+              <span className="text-brand-amber dark:text-brand-gold font-semibold"> Save 10+ hours every month.</span>
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8 sm:mb-12">
               <WaitlistButton onClick={openWaitlistModal} size="lg" />
-              <button className="border-2 border-gray-300 dark:border-slate-500 text-gray-700 dark:text-gray-200 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 transition-all flex items-center space-x-2">
+              <button className="border-2 border-brand-secondary-light dark:border-brand-secondary-dark text-brand-secondary-light dark:text-brand-secondary-dark px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:border-brand-amber hover:text-brand-amber dark:hover:text-brand-gold transition-all flex items-center space-x-2">
                 <span>Watch Demo</span>
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               </button>
@@ -112,29 +112,29 @@ function App() {
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-8 items-center justify-center text-sm mb-6 sm:mb-0">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-gray-900 dark:text-gray-100">No credit card required</span>
+                <span className="text-brand-text-primary dark:text-brand-text-primary-dark">No credit card required</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-gray-900 dark:text-gray-100">14-day free trial</span>
+                <span className="text-brand-text-primary dark:text-brand-text-primary-dark">14-day free trial</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-gray-900 dark:text-gray-100">Cancel anytime</span>
+                <span className="text-brand-text-primary dark:text-brand-text-primary-dark">Cancel anytime</span>
               </div>
             </div>
             
                {/* Social Proof Badge - Moved to bottom of hero */}
-            <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center space-x-2 bg-gradient-to-r from-purple-600/10 to-cyan-500/10 border border-purple-500/20 rounded-full px-4 py-2 mb-6 sm:mb-8">
+            <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center space-x-2 bg-gradient-to-r from-brand-charcoal/10 to-brand-amber/10 dark:from-brand-gold/10 dark:to-brand-soft-gold/10 border border-brand-amber/20 dark:border-brand-gold/20 rounded-full px-4 py-2 mb-6 sm:mb-8">
               <div className="flex -space-x-1">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 border-2 border-white dark:border-slate-900"></div>
+                  <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-brand-charcoal to-brand-amber dark:from-brand-gold dark:to-brand-soft-gold border-2 border-white dark:border-brand-dark-bg"></div>
                 ))}
               </div>
-              <span className="text-sm text-gray-900 dark:text-gray-100 text-center">Trusted by 15,000+ entrepreneurs</span>
+              <span className="text-sm text-brand-text-primary dark:text-brand-text-primary-dark text-center">Trusted by 15,000+ entrepreneurs</span>
               <div className="flex items-center space-x-1">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                  <Star key={i} className="w-3 h-3 fill-brand-amber dark:fill-brand-gold text-brand-amber dark:text-brand-gold" />
                 ))}
               </div>
             </div>
@@ -143,22 +143,22 @@ function App() {
       </section>
 
       {/* Visual Demo Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-purple-50/50 dark:to-slate-800/50">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-brand-secondary-light/10 dark:to-brand-secondary-dark/10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-4xl font-bold text-brand-text-primary dark:text-brand-text-primary-dark mb-4">
               See Expense IQ in Action
             </h2>
-            <p className="text-lg sm:text-xl text-gray-900 dark:text-gray-100 max-w-2xl mx-auto px-4">
+            <p className="text-lg sm:text-xl text-brand-text-primary dark:text-brand-text-primary-dark max-w-2xl mx-auto px-4">
               Watch how our AI transforms chaos into organized, tax-ready expense reports in seconds
             </p>
           </div>
           
           <div className="relative max-w-5xl mx-auto">
             {/* Mock Interface */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+            <div className="bg-white dark:bg-brand-dark-bg rounded-2xl shadow-2xl border border-brand-secondary-light/30 dark:border-brand-secondary-dark/30 overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-purple-600 to-cyan-500 p-4">
+              <div className="bg-gradient-to-r from-brand-charcoal to-brand-amber dark:from-brand-gold dark:to-brand-soft-gold p-4">
                 <div className="flex items-center space-x-3">
                   <div className="flex space-x-1">
                     <div className="w-3 h-3 bg-red-400 rounded-full"></div>
@@ -174,11 +174,11 @@ function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                   {/* Left: Upload Area */}
                   <div className="space-y-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Receipt Processing</h3>
-                    <div className="border-2 border-dashed border-purple-300 dark:border-purple-500/50 rounded-xl p-6 sm:p-8 text-center hover:border-purple-500 transition-colors cursor-pointer">
-                      <Upload className="w-12 h-12 text-purple-500 mx-auto mb-4" />
-                      <p className="text-gray-900 dark:text-gray-100 mb-2">Drop receipts here or click to upload</p>
-                      <p className="text-sm text-gray-800 dark:text-gray-200">Supports photos, PDFs, emails, and bank connections</p>
+                    <h3 className="text-lg font-semibold text-brand-text-primary dark:text-brand-text-primary-dark">Receipt Processing</h3>
+                    <div className="border-2 border-dashed border-brand-amber/50 dark:border-brand-gold/50 rounded-xl p-6 sm:p-8 text-center hover:border-brand-amber dark:hover:border-brand-gold transition-colors cursor-pointer">
+                      <Upload className="w-12 h-12 text-brand-amber dark:text-brand-gold mx-auto mb-4" />
+                      <p className="text-brand-text-primary dark:text-brand-text-primary-dark mb-2">Drop receipts here or click to upload</p>
+                      <p className="text-sm text-brand-secondary-light dark:text-brand-secondary-dark">Supports photos, PDFs, emails, and bank connections</p>
                     </div>
                     
                     {/* Sample Receipts */}
@@ -188,15 +188,15 @@ function App() {
                         { name: "Office Supplies", amount: "$89.99", category: "Office", status: "processed" },
                         { name: "Uber Ride", amount: "$28.75", category: "Travel", status: "processed" }
                       ].map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                        <div key={index} className="flex items-center justify-between p-3 bg-brand-secondary-light/10 dark:bg-brand-secondary-dark/10 rounded-lg">
                           <div className="flex items-center space-x-3">
-                            <div className={`w-3 h-3 rounded-full ${item.status === 'processing' ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`}></div>
+                            <div className={`w-3 h-3 rounded-full ${item.status === 'processing' ? 'bg-brand-amber animate-pulse' : 'bg-green-400'}`}></div>
                             <div>
-                              <p className="font-medium text-gray-900 dark:text-white text-sm">{item.name}</p>
-                              <p className="text-xs text-gray-800 dark:text-gray-200">{item.category}</p>
+                              <p className="font-medium text-brand-text-primary dark:text-brand-text-primary-dark text-sm">{item.name}</p>
+                              <p className="text-xs text-brand-secondary-light dark:text-brand-secondary-dark">{item.category}</p>
                             </div>
                           </div>
-                          <span className="font-semibold text-gray-900 dark:text-white">{item.amount}</span>
+                          <span className="font-semibold text-brand-text-primary dark:text-brand-text-primary-dark">{item.amount}</span>
                         </div>
                       ))}
                     </div>
@@ -204,33 +204,33 @@ function App() {
                   
                   {/* Right: Analytics */}
                   <div className="space-y-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Monthly Overview</h3>
-                    <div className="bg-gradient-to-br from-purple-50 to-cyan-50 dark:from-slate-700 dark:to-slate-600 p-6 rounded-xl">
+                    <h3 className="text-lg font-semibold text-brand-text-primary dark:text-brand-text-primary-dark">Monthly Overview</h3>
+                    <div className="bg-gradient-to-br from-brand-amber/10 to-brand-charcoal/10 dark:from-brand-gold/10 dark:to-brand-soft-gold/10 p-6 rounded-xl">
                       <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">$2,847</p>
-                          <p className="text-sm text-gray-900 dark:text-gray-100">Total Expenses</p>
+                          <p className="text-2xl font-bold text-brand-amber dark:text-brand-gold">$2,847</p>
+                          <p className="text-sm text-brand-text-primary dark:text-brand-text-primary-dark">Total Expenses</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-cyan-500 dark:text-cyan-400">127</p>
-                          <p className="text-sm text-gray-900 dark:text-gray-100">Receipts Processed</p>
+                          <p className="text-2xl font-bold text-brand-charcoal dark:text-brand-soft-gold">127</p>
+                          <p className="text-sm text-brand-text-primary dark:text-brand-text-primary-dark">Receipts Processed</p>
                         </div>
                       </div>
                       
                       {/* Mock Chart */}
                       <div className="space-y-2">
                         {[
-                          { category: "Meals", amount: 35, color: "bg-purple-500" },
-                          { category: "Travel", amount: 28, color: "bg-cyan-500" },
+                          { category: "Meals", amount: 35, color: "bg-brand-amber" },
+                          { category: "Travel", amount: 28, color: "bg-brand-charcoal" },
                           { category: "Office", amount: 22, color: "bg-green-500" },
-                          { category: "Software", amount: 15, color: "bg-yellow-500" }
+                          { category: "Software", amount: 15, color: "bg-brand-gold" }
                         ].map((item, index) => (
                           <div key={index} className="flex items-center space-x-3">
-                            <div className="w-16 sm:w-20 text-sm text-gray-900 dark:text-gray-100">{item.category}</div>
-                            <div className="flex-1 bg-gray-200 dark:bg-slate-600 rounded-full h-2">
+                            <div className="w-16 sm:w-20 text-sm text-brand-text-primary dark:text-brand-text-primary-dark">{item.category}</div>
+                            <div className="flex-1 bg-brand-secondary-light/30 dark:bg-brand-secondary-dark/30 rounded-full h-2">
                               <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.amount}%` }}></div>
                             </div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">{item.amount}%</div>
+                            <div className="text-sm font-medium text-brand-text-primary dark:text-brand-text-primary-dark">{item.amount}%</div>
                           </div>
                         ))}
                       </div>
@@ -254,10 +254,10 @@ function App() {
       <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-4xl font-bold text-brand-text-primary dark:text-brand-text-primary-dark mb-4">
               Why Entrepreneurs Choose Expense IQ
             </h2>
-            <p className="text-lg sm:text-xl text-gray-900 dark:text-gray-100 max-w-2xl mx-auto px-4">
+            <p className="text-lg sm:text-xl text-brand-text-primary dark:text-brand-text-primary-dark max-w-2xl mx-auto px-4">
               Stop losing money to missed deductions and wasted time on manual bookkeeping
             </p>
           </div>
@@ -265,13 +265,13 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
-                icon: <Zap className="w-8 h-8 text-yellow-500" />,
+                icon: <Zap className="w-8 h-8 text-brand-amber dark:text-brand-gold" />,
                 title: "10x Faster Processing",
                 description: "AI captures and categorizes expenses in seconds, not hours. Upload receipts via photo, email, or bank sync.",
                 stat: "Save 10+ hours/month"
               },
               {
-                icon: <Brain className="w-8 h-8 text-purple-500" />,
+                icon: <Brain className="w-8 h-8 text-brand-charcoal dark:text-brand-gold" />,
                 title: "Smart Auto-Categorization",
                 description: "Machine learning adapts to your business patterns. 99.2% accuracy in expense classification.",
                 stat: "99.2% accuracy rate"
@@ -283,19 +283,19 @@ function App() {
                 stat: "Average $3,200 more in deductions"
               },
               {
-                icon: <Shield className="w-8 h-8 text-cyan-500" />,
+                icon: <Shield className="w-8 h-8 text-brand-amber dark:text-brand-soft-gold" />,
                 title: "Audit-Ready Reports",
                 description: "Generate IRS-compliant reports instantly. All receipts stored securely with tamper-proof timestamps.",
                 stat: "100% audit protection"
               }
             ].map((benefit, index) => (
-              <div key={index} className="group bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
+              <div key={index} className="group bg-white dark:bg-brand-dark-bg p-8 rounded-2xl shadow-lg border border-brand-secondary-light/30 dark:border-brand-secondary-dark/30 hover:shadow-xl hover:scale-105 transition-all duration-300">
                 <div className="mb-6 group-hover:scale-110 transition-transform duration-300">
                   {benefit.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{benefit.title}</h3>
-                <p className="text-gray-900 dark:text-gray-100 mb-4 leading-relaxed">{benefit.description}</p>
-                <div className="text-sm font-semibold text-purple-600 dark:text-purple-400">{benefit.stat}</div>
+                <h3 className="text-xl font-bold text-brand-text-primary dark:text-brand-text-primary-dark mb-4">{benefit.title}</h3>
+                <p className="text-brand-text-primary dark:text-brand-text-primary-dark mb-4 leading-relaxed">{benefit.description}</p>
+                <div className="text-sm font-semibold text-brand-amber dark:text-brand-gold">{benefit.stat}</div>
               </div>
             ))}
           </div>
@@ -303,14 +303,14 @@ function App() {
       </section>
 
       {/* How It Works */}
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-900 bg-gradient-to-b from-transparent to-purple-50/50 dark:to-slate-800/50">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-brand-dark-bg bg-gradient-to-b from-transparent to-brand-secondary-light/10 dark:to-brand-secondary-dark/10">
 
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-4xl font-bold text-brand-text-primary dark:text-brand-text-primary-dark mb-4">
               Get Started in Under 5 Minutes
             </h2>
-            <p className="text-lg sm:text-xl text-gray-900 dark:text-gray-100 max-w-2xl mx-auto px-4">
+            <p className="text-lg sm:text-xl text-brand-text-primary dark:text-brand-text-primary-dark max-w-2xl mx-auto px-4">
               From chaos to organized in four simple steps
             </p>
           </div>
@@ -345,20 +345,20 @@ function App() {
               <div key={index} className="relative">
                 {/* Connector Line */}
                 {index < 3 && (
-                  <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-purple-300 to-cyan-300 dark:from-purple-600 dark:to-cyan-600 transform translate-x-4"></div>
+                  <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-brand-amber to-brand-charcoal dark:from-brand-gold dark:to-brand-soft-gold transform translate-x-4"></div>
                 )}
                 
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 relative z-10">
+                <div className="bg-white dark:bg-brand-dark-bg p-6 rounded-2xl shadow-lg border border-brand-secondary-light/30 dark:border-brand-secondary-dark/30 relative z-10">
                   <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                    <div className="w-12 h-12 bg-gradient-to-r from-brand-charcoal to-brand-amber dark:from-brand-gold dark:to-brand-soft-gold rounded-xl flex items-center justify-center text-white font-bold text-lg">
                       {step.step}
                     </div>
-                    <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400">
+                    <div className="w-10 h-10 bg-brand-amber/20 dark:bg-brand-gold/20 rounded-lg flex items-center justify-center text-brand-amber dark:text-brand-gold">
                       {step.icon}
                     </div>
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">{step.title}</h3>
-                  <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed">{step.description}</p>
+                  <h3 className="text-lg font-bold text-brand-text-primary dark:text-brand-text-primary-dark mb-3">{step.title}</h3>
+                  <p className="text-brand-text-primary dark:text-brand-text-primary-dark text-sm leading-relaxed">{step.description}</p>
                 </div>
               </div>
             ))}
@@ -374,10 +374,10 @@ function App() {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-4xl font-bold text-brand-text-primary dark:text-brand-text-primary-dark mb-4">
               Loved by 15,000+ Entrepreneurs
             </h2>
-            <p className="text-lg sm:text-xl text-gray-900 dark:text-gray-100 px-4">
+            <p className="text-lg sm:text-xl text-brand-text-primary dark:text-brand-text-primary-dark px-4">
               See what business owners are saying about Expense IQ
             </p>
           </div>
@@ -406,21 +406,21 @@ function App() {
                 avatar: "JP"
               }
             ].map((testimonial, index) => (
-              <div key={index} className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700">
+              <div key={index} className="bg-white dark:bg-brand-dark-bg p-8 rounded-2xl shadow-lg border border-brand-secondary-light/30 dark:border-brand-secondary-dark/30">
                 <div className="flex items-center space-x-1 mb-4">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={star} className="w-5 h-5 fill-brand-amber dark:fill-brand-gold text-brand-amber dark:text-brand-gold" />
                   ))}
                 </div>
-                <p className="text-gray-900 dark:text-gray-100 mb-6 italic leading-relaxed">"{testimonial.quote}"</p>
+                <p className="text-brand-text-primary dark:text-brand-text-primary-dark mb-6 italic leading-relaxed">"{testimonial.quote}"</p>
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="w-12 h-12 bg-gradient-to-r from-brand-charcoal to-brand-amber dark:from-brand-gold dark:to-brand-soft-gold rounded-full flex items-center justify-center text-white font-bold">
                     {testimonial.avatar}
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">{testimonial.author}</p>
-                    <p className="text-sm text-gray-900 dark:text-gray-100">{testimonial.role}</p>
-                    <p className="text-xs text-purple-600 dark:text-purple-400">{testimonial.business}</p>
+                    <p className="font-semibold text-brand-text-primary dark:text-brand-text-primary-dark">{testimonial.author}</p>
+                    <p className="text-sm text-brand-text-primary dark:text-brand-text-primary-dark">{testimonial.role}</p>
+                    <p className="text-xs text-brand-amber dark:text-brand-gold">{testimonial.business}</p>
                   </div>
                 </div>
               </div>
@@ -430,14 +430,14 @@ function App() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-900 bg-gradient-to-b from-transparent to-purple-50/50 dark:to-slate-800/50">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-brand-dark-bg bg-gradient-to-b from-transparent to-brand-secondary-light/10 dark:to-brand-secondary-dark/10">
 
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-4xl font-bold text-brand-text-primary dark:text-brand-text-primary-dark mb-4">
               Frequently Asked Questions
             </h2>
-            <p className="text-lg sm:text-xl text-gray-900 dark:text-gray-100 px-4">
+            <p className="text-lg sm:text-xl text-brand-text-primary dark:text-brand-text-primary-dark px-4">
               Everything you need to know about Expense IQ
             </p>
           </div>
@@ -469,19 +469,19 @@ function App() {
                 answer: "Yes! We generate IRS-compliant reports and work with major tax software like TurboTax, QuickBooks, and Xero. Many users report saving 5-10 hours during tax season with our organized, categorized expense reports."
               }
             ].map((faq, index) => (
-              <div key={index} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+              <div key={index} className="bg-white dark:bg-brand-dark-bg border border-brand-secondary-light/30 dark:border-brand-secondary-dark/30 rounded-2xl overflow-hidden">
                 <button
                   onClick={() => toggleFaq(index)}
-                  className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                  className="w-full p-6 text-left flex items-center justify-between hover:bg-brand-secondary-light/10 dark:hover:bg-brand-secondary-dark/10 transition-colors"
                 >
-                  <span className="text-lg font-semibold text-gray-900 dark:text-white">{faq.question}</span>
-                  <div className="text-purple-600 dark:text-purple-400">
+                  <span className="text-lg font-semibold text-brand-text-primary dark:text-brand-text-primary-dark">{faq.question}</span>
+                  <div className="text-brand-amber dark:text-brand-gold">
                     {openFaq === index ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                   </div>
                 </button>
                 {openFaq === index && (
                   <div className="px-6 pb-6">
-                    <p className="text-gray-900 dark:text-gray-100 leading-relaxed">{faq.answer}</p>
+                    <p className="text-brand-text-primary dark:text-brand-text-primary-dark leading-relaxed">{faq.answer}</p>
                   </div>
                 )}
               </div>
@@ -491,92 +491,92 @@ function App() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-900 to-slate-900 dark:from-purple-800 dark:to-slate-800">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-brand-charcoal to-brand-amber dark:from-brand-gold dark:to-brand-soft-gold">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
             Ready to Reclaim Your Time?
           </h2>
-          <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
             Join 15,000+ entrepreneurs who've automated their expense tracking and recovered hours every month.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8">
-            <WaitlistButton onClick={openWaitlistModal} size="lg" className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600" />
-            <div className="text-purple-100 text-sm text-center">
+            <WaitlistButton onClick={openWaitlistModal} size="lg" className="bg-white text-brand-charcoal hover:bg-white/90" />
+            <div className="text-white/90 text-sm text-center">
               No credit card required • Cancel anytime • Set up in 5 minutes
             </div>
           </div>
           
-          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-8 items-center justify-center text-purple-100">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-8 items-center justify-center text-white/90">
             <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-cyan-400" />
-              <span className="text-purple-200">14-day free trial</span>
+              <CheckCircle className="w-4 h-4 text-white" />
+              <span className="text-white/90">14-day free trial</span>
             </div>
             <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-cyan-400" />
-              <span className="text-purple-200">$3,200 average savings</span>
+              <CheckCircle className="w-4 h-4 text-white" />
+              <span className="text-white/90">$3,200 average savings</span>
             </div>
             <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-cyan-400" />
-              <span className="text-purple-200">10+ hours saved monthly</span>
+              <CheckCircle className="w-4 h-4 text-white" />
+              <span className="text-white/90">10+ hours saved monthly</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 dark:bg-slate-950 text-white py-16 px-4 sm:px-6 lg:px-8">
+      <footer className="bg-brand-charcoal dark:bg-brand-dark-bg text-white py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             {/* Logo and Description */}
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-400 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-brand-gold to-brand-soft-gold rounded-lg flex items-center justify-center">
                   <Brain className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-2xl font-bold">Expense IQ</span>
               </div>
-              <p className="text-gray-400 mb-6 max-w-md">
+              <p className="text-white/70 mb-6 max-w-md">
                 The AI-powered expense management platform that saves entrepreneurs 10+ hours per month and maximizes tax deductions.
               </p>
               <div className="flex space-x-4">
-                <Twitter className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
-                <Linkedin className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
-                <Mail className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
+                <Twitter className="w-5 h-5 text-white/70 hover:text-brand-gold cursor-pointer transition-colors" />
+                <Linkedin className="w-5 h-5 text-white/70 hover:text-brand-gold cursor-pointer transition-colors" />
+                <Mail className="w-5 h-5 text-white/70 hover:text-brand-gold cursor-pointer transition-colors" />
               </div>
             </div>
             
             {/* Product Links */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Integrations</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
+              <ul className="space-y-2 text-white/70">
+                <li><a href="#" className="hover:text-brand-gold transition-colors">Features</a></li>
+                <li><a href="#" className="hover:text-brand-gold transition-colors">Pricing</a></li>
+                <li><a href="#" className="hover:text-brand-gold transition-colors">Integrations</a></li>
+                <li><a href="#" className="hover:text-brand-gold transition-colors">API</a></li>
               </ul>
             </div>
             
             {/* Support Links */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+              <ul className="space-y-2 text-white/70">
+                <li><a href="#" className="hover:text-brand-gold transition-colors">Help Center</a></li>
+                <li><a href="#" className="hover:text-brand-gold transition-colors">Contact Us</a></li>
+                <li><a href="#" className="hover:text-brand-gold transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-brand-gold transition-colors">Terms of Service</a></li>
               </ul>
             </div>
           </div>
           
-          <div className="border-t border-slate-800 pt-8">
+          <div className="border-t border-white/20 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-400 text-sm">
+              <p className="text-white/70 text-sm">
                 © 2025 Expense IQ. All rights reserved.
               </p>
               <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 mt-4 md:mt-0">
-                <span className="text-sm text-gray-300">🔒 SOC 2 Type II Compliant</span>
-                <span className="text-sm text-gray-300">🏦 Bank-Level Security</span>
+                <span className="text-sm text-white/80">🔒 SOC 2 Type II Compliant</span>
+                <span className="text-sm text-white/80">🏦 Bank-Level Security</span>
               </div>
             </div>
           </div>

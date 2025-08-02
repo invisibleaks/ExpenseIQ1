@@ -6,13 +6,25 @@ export default {
     extend: {
       colors: {
         brand: {
-          DEFAULT: '#1C1C1E',    // Charcoal
-          dark: '#0E0E10',       // Deep background (dark mode)
-          gold: '#E5C07B',       // Elegant Gold
-          soft: '#D97706',       // Warm Amber hover
-          ivory: '#F4F4F6',      // Light background (light mode)
-          text: '#1A1A1A',       // Text for light mode
-          'text-dark': '#F5F5F5' // Text for dark mode
+          // Primary colors
+          charcoal: '#1C1C1E',   // Light mode primary
+          gold: '#E5C07B',       // Dark mode primary
+          
+          // Secondary colors
+          'secondary-light': '#8E8E93',  // Light mode secondary
+          'secondary-dark': '#D1D1D6',   // Dark mode secondary
+          
+          // Accent/CTA colors
+          amber: '#D97706',      // Light mode accent
+          'soft-gold': '#FBBF24', // Dark mode accent
+          
+          // Background colors
+          ivory: '#F4F4F6',      // Light mode background
+          'dark-bg': '#0E0E10',  // Dark mode background
+          
+          // Text colors
+          'text-primary': '#1A1A1A',    // Light mode text
+          'text-primary-dark': '#F5F5F5' // Dark mode text
         }
       }
     }
