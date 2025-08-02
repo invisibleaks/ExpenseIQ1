@@ -54,7 +54,7 @@ function App() {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-slate-900' : 'bg-gray-50'}`}>
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-white/10 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200/20 dark:border-slate-700/50">
+      <nav className="fixed top-0 w-full z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/20 dark:border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
@@ -69,7 +69,7 @@ function App() {
               <a href="#pricing" className="text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Pricing</a>
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className="p-2 rounded-lg bg-gray-200/50 dark:bg-slate-700/50 hover:bg-gray-300/50 dark:hover:bg-slate-600/50 transition-colors"
+                className="p-2 rounded-lg bg-gray-200/80 dark:bg-slate-700/80 hover:bg-gray-300/80 dark:hover:bg-slate-600/80 transition-colors"
                 aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
               >
                 {darkMode ? <Sun className="w-4 h-4 text-yellow-500" /> : <Moon className="w-4 h-4 text-slate-600" />}
@@ -111,15 +111,15 @@ function App() {
             <div className="flex items-center justify-center space-x-8 text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span>No credit card required</span>
+                <span className="text-gray-600 dark:text-gray-300">No credit card required</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span>14-day free trial</span>
+                <span className="text-gray-600 dark:text-gray-300">14-day free trial</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span>Cancel anytime</span>
+                <span className="text-gray-600 dark:text-gray-300">Cancel anytime</span>
               </div>
             </div>
             
@@ -130,7 +130,7 @@ function App() {
                   <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 border-2 border-white dark:border-slate-900"></div>
                 ))}
               </div>
-              <span className="text-sm text-gray-700 dark:text-gray-300">Trusted by 15,000+ entrepreneurs</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Trusted by 15,000+ entrepreneurs</span>
               <div className="flex items-center space-x-1">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
@@ -192,7 +192,7 @@ function App() {
                             <div className={`w-3 h-3 rounded-full ${item.status === 'processing' ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`}></div>
                             <div>
                               <p className="font-medium text-gray-900 dark:text-white text-sm">{item.name}</p>
-                              <p className="text-xs text-gray-500">{item.category}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{item.category}</p>
                             </div>
                           </div>
                           <span className="font-semibold text-gray-900 dark:text-white">{item.amount}</span>
@@ -207,11 +207,11 @@ function App() {
                     <div className="bg-gradient-to-br from-purple-50 to-cyan-50 dark:from-slate-700 dark:to-slate-600 p-6 rounded-xl">
                       <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-purple-600">$2,847</p>
+                          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">$2,847</p>
                           <p className="text-sm text-gray-600 dark:text-gray-400">Total Expenses</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-cyan-500">127</p>
+                          <p className="text-2xl font-bold text-cyan-500 dark:text-cyan-400">127</p>
                           <p className="text-sm text-gray-600 dark:text-gray-400">Receipts Processed</p>
                         </div>
                       </div>
@@ -238,7 +238,7 @@ function App() {
                     <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                       <div className="flex items-center space-x-2">
                         <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span className="text-green-800 dark:text-green-400 font-medium">Tax report ready for download</span>
+                        <span className="text-green-700 dark:text-green-300 font-medium">Tax report ready for download</span>
                       </div>
                     </div>
                   </div>
@@ -507,15 +507,15 @@ function App() {
           <div className="flex items-center justify-center space-x-8 text-purple-200">
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-cyan-400" />
-              <span>14-day free trial</span>
+              <span className="text-purple-200">14-day free trial</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-cyan-400" />
-              <span>$3,200 average savings</span>
+              <span className="text-purple-200">$3,200 average savings</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-cyan-400" />
-              <span>10+ hours saved monthly</span>
+              <span className="text-purple-200">10+ hours saved monthly</span>
             </div>
           </div>
         </div>
@@ -572,8 +572,8 @@ function App() {
                 © 2025 Expense IQ. All rights reserved.
               </p>
               <div className="flex items-center space-x-6 mt-4 md:mt-0">
-                <span className="text-sm text-gray-400">🔒 SOC 2 Type II Compliant</span>
-                <span className="text-sm text-gray-400">🏦 Bank-Level Security</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">🔒 SOC 2 Type II Compliant</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">🏦 Bank-Level Security</span>
               </div>
             </div>
           </div>
