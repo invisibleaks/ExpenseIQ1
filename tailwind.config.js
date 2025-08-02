@@ -8,10 +8,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-dark-teal': '#2C3E50',
+        'brand-charcoal-Navy': '#1E2B32',
         'brand-darker-teal': '#1A252F',
         'brand-muted-teal': '#34495E',
-        'brand-warm-beige': '#E8DCC6',
+        'brand-warm-beige': '#FOEDE5',
         'brand-light-beige': '#F5F1E8',
         'brand-cream': '#F8F6F0',
         'brand-soft-gray': '#95A5A6',
