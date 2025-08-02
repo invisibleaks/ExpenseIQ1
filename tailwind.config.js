@@ -85,21 +85,21 @@ function App() {
       <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-brand-text-dark dark:text-brand-text-light mb-4 sm:mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-ivory dark:text-ivory mb-4 sm:mb-6 leading-tight">
               Stop Drowning in
-              <span className="bg-gradient-to-r from-brand-dark-teal via-brand-warm-beige to-brand-dark-teal dark:from-brand-warm-beige dark:via-brand-light-beige dark:to-brand-warm-beige bg-clip-text text-transparent block">
+              <span className="text-ivory dark:text-ivory block">
                 Expense Receipts
               </span>
             </h1>
             
-            <p className="text-lg sm:text-xl md:text-2xl text-brand-text-dark dark:text-brand-text-light mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">
-              <span className="text-brand-text-dark dark:text-brand-text-light">AI-powered expense management that automatically captures, categorizes, and consolidates your business expenses across all accounts.</span>
-              <span className="text-brand-dark-teal dark:text-brand-warm-beige font-semibold"> Save 10+ hours every month.</span>
+            <p className="text-lg sm:text-xl md:text-2xl text-warm-gray dark:text-warm-gray mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">
+              <span className="text-warm-gray dark:text-warm-gray">AI-powered expense management that automatically captures, categorizes, and consolidates your business expenses across all accounts.</span>
+              <span className="text-warm-gray dark:text-warm-gray font-semibold"> Save 10+ hours every month.</span>
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8 sm:mb-12">
               <WaitlistButton onClick={openWaitlistModal} size="lg" />
-              <button className="border-2 border-brand-soft-gray dark:border-brand-muted-teal text-brand-text-muted dark:text-brand-soft-gray px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:border-brand-dark-teal hover:text-brand-dark-teal dark:hover:border-brand-warm-beige dark:hover:text-brand-warm-beige transition-all flex items-center space-x-2">
+              <button className="border-2 border-warm-gray dark:border-slate-graphite text-warm-gray dark:text-warm-gray px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:border-charcoal-navy hover:text-charcoal-navy dark:hover:border-ivory dark:hover:text-ivory transition-all flex items-center space-x-2">
                 <span>Watch Demo</span>
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               </button>
@@ -112,29 +112,29 @@ function App() {
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-8 items-center justify-center text-sm mb-6 sm:mb-0">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-brand-text-dark dark:text-brand-text-light">No credit card required</span>
+                <span className="text-warm-gray dark:text-warm-gray">No credit card required</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-brand-text-dark dark:text-brand-text-light">14-day free trial</span>
+                <span className="text-warm-gray dark:text-warm-gray">14-day free trial</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-brand-text-dark dark:text-brand-text-light">Cancel anytime</span>
+                <span className="text-warm-gray dark:text-warm-gray">Cancel anytime</span>
               </div>
             </div>
             
                {/* Social Proof Badge - Moved to bottom of hero */}
-            <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center space-x-2 bg-gradient-to-r from-brand-dark-teal/10 to-brand-warm-beige/10 dark:from-brand-warm-beige/10 dark:to-brand-light-beige/10 border border-brand-warm-beige/30 dark:border-brand-warm-beige/30 rounded-full px-4 py-2 mb-6 sm:mb-8">
+            <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center space-x-2 bg-slate-graphite/10 dark:bg-slate-graphite/20 border border-warm-gray/30 dark:border-warm-gray/30 rounded-full px-4 py-2 mb-6 sm:mb-8">
               <div className="flex -space-x-1">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-brand-dark-teal to-brand-warm-beige border-2 border-white dark:border-brand-dark-teal"></div>
+                  <div key={i} className="w-6 h-6 rounded-full bg-charcoal-navy dark:bg-ivory border-2 border-ivory dark:border-charcoal-navy"></div>
                 ))}
               </div>
-              <span className="text-sm text-brand-text-dark dark:text-brand-text-light text-center">Trusted by 15,000+ entrepreneurs</span>
+              <span className="text-sm text-warm-gray dark:text-warm-gray text-center">Trusted by 15,000+ entrepreneurs</span>
               <div className="flex items-center space-x-1">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Star key={i} className="w-3 h-3 fill-brand-warm-beige text-brand-warm-beige" />
+                  <Star key={i} className="w-3 h-3 fill-gold text-gold" />
                 ))}
               </div>
             </div>
@@ -143,29 +143,29 @@ function App() {
       </section>
 
       {/* Visual Demo Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-brand-soft-gray/10 dark:to-brand-muted-teal/20">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-graphite/5 dark:bg-slate-graphite/10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-brand-text-dark dark:text-brand-text-light mb-4">
+            <h2 className="text-4xl font-bold text-ivory dark:text-ivory mb-4">
               See Expense IQ in Action
             </h2>
-            <p className="text-lg sm:text-xl text-brand-text-dark dark:text-brand-text-light max-w-2xl mx-auto px-4">
+            <p className="text-lg sm:text-xl text-warm-gray dark:text-warm-gray max-w-2xl mx-auto px-4">
               Watch how our AI transforms chaos into organized, tax-ready expense reports in seconds
             </p>
           </div>
           
           <div className="relative max-w-5xl mx-auto">
             {/* Mock Interface */}
-            <div className="bg-white dark:bg-brand-darker-teal rounded-2xl shadow-2xl border border-brand-soft-gray/30 dark:border-brand-muted-teal/50 overflow-hidden">
+            <div className="bg-ivory dark:bg-deep-blue-gray rounded-2xl border border-warm-gray/30 dark:border-slate-graphite/50 overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-brand-dark-teal to-brand-warm-beige p-4">
+              <div className="bg-charcoal-navy dark:bg-slate-graphite p-4">
                 <div className="flex items-center space-x-3">
                   <div className="flex space-x-1">
                     <div className="w-3 h-3 bg-red-400 rounded-full"></div>
                     <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
                     <div className="w-3 h-3 bg-green-400 rounded-full"></div>
                   </div>
-                  <span className="text-white font-semibold">Expense IQ Dashboard</span>
+                  <span className="text-ivory font-semibold">Expense IQ Dashboard</span>
                 </div>
               </div>
               
@@ -174,11 +174,11 @@ function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                   {/* Left: Upload Area */}
                   <div className="space-y-6">
-                    <h3 className="text-lg font-semibold text-brand-text-dark dark:text-brand-text-light">Receipt Processing</h3>
-                    <div className="border-2 border-dashed border-brand-warm-beige/50 rounded-xl p-6 sm:p-8 text-center hover:border-brand-warm-beige transition-colors cursor-pointer">
-                      <Upload className="w-12 h-12 text-brand-warm-beige mx-auto mb-4" />
-                      <p className="text-brand-text-dark dark:text-brand-text-light mb-2">Drop receipts here or click to upload</p>
-                      <p className="text-sm text-brand-text-muted dark:text-brand-soft-gray">Supports photos, PDFs, emails, and bank connections</p>
+                    <h3 className="text-lg font-semibold text-charcoal-navy dark:text-ivory">Receipt Processing</h3>
+                    <div className="border-2 border-dashed border-warm-gray/50 rounded-xl p-6 sm:p-8 text-center hover:border-warm-gray transition-colors cursor-pointer">
+                      <Upload className="w-12 h-12 text-warm-gray mx-auto mb-4" />
+                      <p className="text-charcoal-navy dark:text-ivory mb-2">Drop receipts here or click to upload</p>
+                      <p className="text-sm text-warm-gray dark:text-warm-gray">Supports photos, PDFs, emails, and bank connections</p>
                     </div>
                     
                     {/* Sample Receipts */}
@@ -188,15 +188,15 @@ function App() {
                         { name: "Office Supplies", amount: "$89.99", category: "Office", status: "processed" },
                         { name: "Uber Ride", amount: "$28.75", category: "Travel", status: "processed" }
                       ].map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-brand-soft-gray/10 dark:bg-brand-muted-teal/30 rounded-lg">
+                        <div key={index} className="flex items-center justify-between p-3 bg-warm-gray/10 dark:bg-slate-graphite/30 rounded-lg">
                           <div className="flex items-center space-x-3">
-                            <div className={`w-3 h-3 rounded-full ${item.status === 'processing' ? 'bg-brand-warm-beige animate-pulse' : 'bg-green-400'}`}></div>
+                            <div className={`w-3 h-3 rounded-full ${item.status === 'processing' ? 'bg-warm-gray animate-pulse' : 'bg-green-400'}`}></div>
                             <div>
-                              <p className="font-medium text-brand-text-dark dark:text-brand-text-light text-sm">{item.name}</p>
-                              <p className="text-xs text-brand-text-muted dark:text-brand-soft-gray">{item.category}</p>
+                              <p className="font-medium text-charcoal-navy dark:text-ivory text-sm">{item.name}</p>
+                              <p className="text-xs text-warm-gray dark:text-warm-gray">{item.category}</p>
                             </div>
                           </div>
-                          <span className="font-semibold text-brand-text-dark dark:text-brand-text-light">{item.amount}</span>
+                          <span className="font-semibold text-charcoal-navy dark:text-ivory">{item.amount}</span>
                         </div>
                       ))}
                     </div>
@@ -204,33 +204,33 @@ function App() {
                   
                   {/* Right: Analytics */}
                   <div className="space-y-6">
-                    <h3 className="text-lg font-semibold text-brand-text-dark dark:text-brand-text-light">Monthly Overview</h3>
-                    <div className="bg-gradient-to-br from-brand-warm-beige/10 to-brand-dark-teal/10 dark:from-brand-warm-beige/10 dark:to-brand-muted-teal/20 p-6 rounded-xl">
+                    <h3 className="text-lg font-semibold text-charcoal-navy dark:text-ivory">Monthly Overview</h3>
+                    <div className="bg-slate-graphite/10 dark:bg-slate-graphite/20 p-6 rounded-xl">
                       <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-brand-warm-beige">$2,847</p>
-                          <p className="text-sm text-brand-text-dark dark:text-brand-text-light">Total Expenses</p>
+                          <p className="text-2xl font-bold text-warm-gray">$2,847</p>
+                          <p className="text-sm text-charcoal-navy dark:text-ivory">Total Expenses</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-brand-dark-teal dark:text-brand-light-beige">127</p>
-                          <p className="text-sm text-brand-text-dark dark:text-brand-text-light">Receipts Processed</p>
+                          <p className="text-2xl font-bold text-charcoal-navy dark:text-ivory">127</p>
+                          <p className="text-sm text-charcoal-navy dark:text-ivory">Receipts Processed</p>
                         </div>
                       </div>
                       
                       {/* Mock Chart */}
                       <div className="space-y-2">
                         {[
-                          { category: "Meals", amount: 35, color: "bg-brand-warm-beige" },
-                          { category: "Travel", amount: 28, color: "bg-brand-dark-teal" },
+                          { category: "Meals", amount: 35, color: "bg-warm-gray" },
+                          { category: "Travel", amount: 28, color: "bg-charcoal-navy" },
                           { category: "Office", amount: 22, color: "bg-green-500" },
-                          { category: "Software", amount: 15, color: "bg-brand-muted-teal" }
+                          { category: "Software", amount: 15, color: "bg-slate-graphite" }
                         ].map((item, index) => (
                           <div key={index} className="flex items-center space-x-3">
-                            <div className="w-16 sm:w-20 text-sm text-brand-text-dark dark:text-brand-text-light">{item.category}</div>
-                            <div className="flex-1 bg-brand-soft-gray/30 dark:bg-brand-muted-teal/30 rounded-full h-2">
+                            <div className="w-16 sm:w-20 text-sm text-charcoal-navy dark:text-ivory">{item.category}</div>
+                            <div className="flex-1 bg-warm-gray/30 dark:bg-slate-graphite/30 rounded-full h-2">
                               <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.amount}%` }}></div>
                             </div>
-                            <div className="text-sm font-medium text-brand-text-dark dark:text-brand-text-light">{item.amount}%</div>
+                            <div className="text-sm font-medium text-charcoal-navy dark:text-ivory">{item.amount}%</div>
                           </div>
                         ))}
                       </div>
@@ -254,10 +254,10 @@ function App() {
       <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-brand-text-dark dark:text-brand-text-light mb-4">
+            <h2 className="text-4xl font-bold text-ivory dark:text-ivory mb-4">
               Why Entrepreneurs Choose Expense IQ
             </h2>
-            <p className="text-lg sm:text-xl text-brand-text-dark dark:text-brand-text-light max-w-2xl mx-auto px-4">
+            <p className="text-lg sm:text-xl text-warm-gray dark:text-warm-gray max-w-2xl mx-auto px-4">
               Stop losing money to missed deductions and wasted time on manual bookkeeping
             </p>
           </div>
@@ -265,7 +265,7 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
-                icon: <Zap className="w-8 h-8 text-brand-warm-beige" />,
+                icon: <Zap className="w-8 h-8 text-warm-gray" />,
                 title: "10x Faster Processing",
                 description: "AI captures and categorizes expenses in seconds, not hours. Upload receipts via photo, email, or bank sync.",
                 stat: "Save 10+ hours/month"
