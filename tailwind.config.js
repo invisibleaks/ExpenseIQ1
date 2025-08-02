@@ -16,7 +16,6 @@ export default {
         'brand-cream': '#F8F6F0',
         'brand-soft-gray': '#95A5A6',
         'brand-text-light': '#FFFFFF',
-        
         'brand-text-dark': '#2C3E50',
         'brand-text-muted': '#7F8C8D',
       }
