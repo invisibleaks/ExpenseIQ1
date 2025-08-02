@@ -92,7 +92,7 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
   // Submit to Google Sheets
   const submitToGoogleSheets = async (data: FormData): Promise<void> => {
     // Google Apps Script Web App URL - Replace with your actual deployment URL
-    const GOOGLE_SCRIPT_URL = 'PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMjHxYeY_icqniLwYfZ0T35D9tR2Ew32h5CdJQayvYKYn3iv2K-eMZUELhCc18gZFZ/exec';
     
     const payload = {
       name: data.name.trim(),
