@@ -92,7 +92,7 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
   // Submit to Google Sheets
   const submitToGoogleSheets = async (data: FormData): Promise<void> => {
     // Google Apps Script Web App URL - Replace with your actual deployment URL
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcNk0QFEVRZ_2oXGS-Eyipae5FP3TqwJchSdJL3u7-0FdaFrOp2-unzF33w5qLCQQu/exec';
+    const GOOGLE_SCRIPT_URL = 'YOUR_ACTUAL_GOOGLE_SCRIPT_URL_HERE';
     
     const payload = {
       name: data.name.trim(),
@@ -101,22 +101,33 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
       source: 'expense-iq-waitlist'
     };
 
+    console.log('Submitting to Google Sheets:', payload);
+
     try {
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors', // Required for Google Apps Script
+        mode: 'cors', // Changed from no-cors to cors for better error handling
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload)
       });
 
-      // Note: With no-cors mode, we can't read the response
-      // We'll assume success if no error is thrown
-      console.log('Waitlist submission sent successfully');
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('Response from Google Sheets:', result);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Submission failed');
+      }
     } catch (error) {
       console.error('Error submitting to Google Sheets:', error);
-      throw new Error('Failed to join waitlist. Please try again.');
+      throw new Error(`Failed to join waitlist: ${error.message}`);
     }
   };
 
