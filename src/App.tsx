@@ -64,9 +64,9 @@ function App() {
               <span className="text-xl font-bold text-gray-900 dark:text-white">Expense IQ</span>
             </div>
           
-            <div className="flex items-center space-x-6">
-              <a href="#features" className="text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Features</a>
-              <a href="#pricing" className="text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Pricing</a>
+            <div className="hidden sm:flex items-center space-x-6">
+              <a href="#features" className="text-gray-700 dark:text-gray-200 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Features</a>
+              <a href="#pricing" className="text-gray-700 dark:text-gray-200 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Pricing</a>
               <button
                 onClick={() => setDarkMode(!darkMode)}
                 className="p-2 rounded-lg bg-gray-200/80 dark:bg-slate-700/80 hover:bg-gray-300/80 dark:hover:bg-slate-600/80 transition-colors"
@@ -81,24 +81,24 @@ function App() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 leading-tight">
               Stop Drowning in
               <span className="bg-gradient-to-r from-purple-600 via-purple-500 to-cyan-400 bg-clip-text text-transparent block">
                 Expense Receipts
               </span>
             </h1>
             
-            <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-700 dark:text-gray-200 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">
               AI-powered expense management that automatically captures, categorizes, and consolidates your business expenses across all accounts.
-              <span className="text-cyan-400 dark:text-cyan-300 font-semibold"> Save 10+ hours every month.</span>
+              <span className="text-cyan-600 dark:text-cyan-300 font-semibold"> Save 10+ hours every month.</span>
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-12">
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8 sm:mb-12">
               <WaitlistButton onClick={openWaitlistModal} size="lg" />
-              <button className="border-2 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 px-8 py-4 rounded-xl text-lg font-semibold hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 transition-all flex items-center space-x-2">
+              <button className="border-2 border-gray-300 dark:border-slate-500 text-gray-700 dark:text-gray-200 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 transition-all flex items-center space-x-2">
                 <span>Watch Demo</span>
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               </button>
@@ -108,29 +108,29 @@ function App() {
 
             
             {/* Trust indicators */}
-            <div className="flex items-center justify-center space-x-8 text-sm">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-8 items-center justify-center text-sm mb-6 sm:mb-0">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-gray-700 dark:text-gray-300">No credit card required</span>
+                <span className="text-gray-700 dark:text-gray-200">No credit card required</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-gray-700 dark:text-gray-300">14-day free trial</span>
+                <span className="text-gray-700 dark:text-gray-200">14-day free trial</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-gray-700 dark:text-gray-300">Cancel anytime</span>
+                <span className="text-gray-700 dark:text-gray-200">Cancel anytime</span>
               </div>
             </div>
             
                {/* Social Proof Badge - Moved to bottom of hero */}
-            <div className="mt-8 inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600/10 to-cyan-500/10 border border-purple-500/20 rounded-full px-4 py-2 mb-8">
+            <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center space-x-2 bg-gradient-to-r from-purple-600/10 to-cyan-500/10 border border-purple-500/20 rounded-full px-4 py-2 mb-6 sm:mb-8">
               <div className="flex -space-x-1">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 border-2 border-white dark:border-slate-900"></div>
                 ))}
               </div>
-              <span className="text-sm text-gray-700 dark:text-gray-300">Trusted by 15,000+ entrepreneurs</span>
+              <span className="text-sm text-gray-700 dark:text-gray-200 text-center">Trusted by 15,000+ entrepreneurs</span>
               <div className="flex items-center space-x-1">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
@@ -148,7 +148,7 @@ function App() {
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               See Expense IQ in Action
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-700 dark:text-gray-200 max-w-2xl mx-auto px-4">
               Watch how our AI transforms chaos into organized, tax-ready expense reports in seconds
             </p>
           </div>
@@ -170,14 +170,14 @@ function App() {
               
               {/* Demo Content */}
               <div className="p-8">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                   {/* Left: Upload Area */}
                   <div className="space-y-6">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Receipt Processing</h3>
-                    <div className="border-2 border-dashed border-purple-300 dark:border-purple-500/50 rounded-xl p-8 text-center hover:border-purple-500 transition-colors cursor-pointer">
+                    <div className="border-2 border-dashed border-purple-300 dark:border-purple-500/50 rounded-xl p-6 sm:p-8 text-center hover:border-purple-500 transition-colors cursor-pointer">
                       <Upload className="w-12 h-12 text-purple-500 mx-auto mb-4" />
-                      <p className="text-gray-600 dark:text-gray-400 mb-2">Drop receipts here or click to upload</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-500">Supports photos, PDFs, emails, and bank connections</p>
+                      <p className="text-gray-700 dark:text-gray-200 mb-2">Drop receipts here or click to upload</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Supports photos, PDFs, emails, and bank connections</p>
                     </div>
                     
                     {/* Sample Receipts */}
@@ -192,7 +192,7 @@ function App() {
                             <div className={`w-3 h-3 rounded-full ${item.status === 'processing' ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`}></div>
                             <div>
                               <p className="font-medium text-gray-900 dark:text-white text-sm">{item.name}</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-300">{item.category}</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-300">{item.category}</p>
                             </div>
                           </div>
                           <span className="font-semibold text-gray-900 dark:text-white">{item.amount}</span>
@@ -208,11 +208,11 @@ function App() {
                       <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="text-center">
                           <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">$2,847</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">Total Expenses</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-200">Total Expenses</p>
                         </div>
                         <div className="text-center">
                           <p className="text-2xl font-bold text-cyan-500 dark:text-cyan-400">127</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">Receipts Processed</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-200">Receipts Processed</p>
                         </div>
                       </div>
                       
@@ -225,7 +225,7 @@ function App() {
                           { category: "Software", amount: 15, color: "bg-yellow-500" }
                         ].map((item, index) => (
                           <div key={index} className="flex items-center space-x-3">
-                            <div className="w-20 text-sm text-gray-600 dark:text-gray-300">{item.category}</div>
+                            <div className="w-16 sm:w-20 text-sm text-gray-700 dark:text-gray-200">{item.category}</div>
                             <div className="flex-1 bg-gray-200 dark:bg-slate-600 rounded-full h-2">
                               <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.amount}%` }}></div>
                             </div>
@@ -256,7 +256,7 @@ function App() {
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Why Entrepreneurs Choose Expense IQ
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-700 dark:text-gray-200 max-w-2xl mx-auto px-4">
               Stop losing money to missed deductions and wasted time on manual bookkeeping
             </p>
           </div>
@@ -293,7 +293,7 @@ function App() {
                   {benefit.icon}
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{benefit.title}</h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">{benefit.description}</p>
+                <p className="text-gray-700 dark:text-gray-200 mb-4 leading-relaxed">{benefit.description}</p>
                 <div className="text-sm font-semibold text-purple-600 dark:text-purple-400">{benefit.stat}</div>
               </div>
             ))}
@@ -308,7 +308,7 @@ function App() {
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Get Started in Under 5 Minutes
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-700 dark:text-gray-200 max-w-2xl mx-auto px-4">
               From chaos to organized in four simple steps
             </p>
           </div>
@@ -356,7 +356,7 @@ function App() {
                     </div>
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">{step.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm">{step.description}</p>
+                  <p className="text-gray-700 dark:text-gray-200 text-sm leading-relaxed">{step.description}</p>
                 </div>
               </div>
             ))}
@@ -375,7 +375,7 @@ function App() {
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Loved by 15,000+ Entrepreneurs
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
+            <p className="text-lg sm:text-xl text-gray-700 dark:text-gray-200 px-4">
               See what business owners are saying about Expense IQ
             </p>
           </div>
@@ -410,14 +410,14 @@ function App() {
                     <Star key={star} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-gray-700 dark:text-gray-200 mb-6 italic leading-relaxed">"{testimonial.quote}"</p>
+                <p className="text-gray-800 dark:text-gray-100 mb-6 italic leading-relaxed">"{testimonial.quote}"</p>
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center text-white font-bold">
                     {testimonial.avatar}
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900 dark:text-white">{testimonial.author}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{testimonial.role}</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-200">{testimonial.role}</p>
                     <p className="text-xs text-purple-600 dark:text-purple-400">{testimonial.business}</p>
                   </div>
                 </div>
@@ -434,7 +434,7 @@ function App() {
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Frequently Asked Questions
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
+            <p className="text-lg sm:text-xl text-gray-700 dark:text-gray-200 px-4">
               Everything you need to know about Expense IQ
             </p>
           </div>
@@ -478,7 +478,7 @@ function App() {
                 </button>
                 {openFaq === index && (
                   <div className="px-6 pb-6">
-                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{faq.answer}</p>
+                    <p className="text-gray-700 dark:text-gray-200 leading-relaxed">{faq.answer}</p>
                   </div>
                 )}
               </div>
@@ -499,23 +499,23 @@ function App() {
           
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8">
             <WaitlistButton onClick={openWaitlistModal} size="lg" className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600" />
-            <div className="text-purple-200 text-sm">
+            <div className="text-purple-100 text-sm text-center">
               No credit card required • Cancel anytime • Set up in 5 minutes
             </div>
           </div>
           
-          <div className="flex items-center justify-center space-x-8 text-purple-200">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-8 items-center justify-center text-purple-100">
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-cyan-400" />
-              <span className="text-purple-200">14-day free trial</span>
+              <span>14-day free trial</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-cyan-400" />
-              <span className="text-purple-200">$3,200 average savings</span>
+              <span>$3,200 average savings</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-cyan-400" />
-              <span className="text-purple-200">10+ hours saved monthly</span>
+              <span>10+ hours saved monthly</span>
             </div>
           </div>
         </div>
@@ -571,9 +571,9 @@ function App() {
               <p className="text-gray-400 text-sm">
                 © 2025 Expense IQ. All rights reserved.
               </p>
-              <div className="flex items-center space-x-6 mt-4 md:mt-0">
-                <span className="text-sm text-gray-500 dark:text-gray-300">🔒 SOC 2 Type II Compliant</span>
-                <span className="text-sm text-gray-500 dark:text-gray-300">🏦 Bank-Level Security</span>
+              <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 mt-4 md:mt-0">
+                <span className="text-sm text-gray-400 dark:text-gray-300">🔒 SOC 2 Type II Compliant</span>
+                <span className="text-sm text-gray-400 dark:text-gray-300">🏦 Bank-Level Security</span>
               </div>
             </div>
           </div>
