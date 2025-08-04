@@ -59,8 +59,8 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-brand-dark-teal to-brand-warm-beige rounded-lg flex items-center justify-center">
-                <Brain className="w-5 h-5 text-brand-text-light" />
+              <div className="w-8 h-8 bg-brand-dark-teal dark:bg-white rounded-lg flex items-center justify-center">
+                <Brain className="w-5 h-5 text-white dark:text-brand-dark-teal" />
               </div>
               <span className="text-xl font-bold text-brand-text-dark dark:text-brand-text-light">Expense IQ</span>
             </div>
@@ -87,7 +87,7 @@ function App() {
           <div className="text-center">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-brand-text-dark dark:text-brand-text-light mb-4 sm:mb-6 leading-tight">
               Stop Drowning in
-              <span className="bg-gradient-to-r from-brand-dark-teal via-brand-warm-beige to-brand-dark-teal dark:from-brand-warm-beige dark:via-brand-light-beige dark:to-brand-warm-beige bg-clip-text text-transparent block">
+              <span className="text-brand-text-dark dark:text-brand-text-light block">
                 Expense Receipts
               </span>
             </h1>
@@ -125,16 +125,16 @@ function App() {
             </div>
             
                {/* Social Proof Badge - Moved to bottom of hero */}
-            <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center space-x-2 bg-gradient-to-r from-brand-dark-teal/10 to-brand-warm-beige/10 dark:from-brand-warm-beige/10 dark:to-brand-light-beige/10 border border-brand-warm-beige/30 dark:border-brand-warm-beige/30 rounded-full px-4 py-2 mb-6 sm:mb-8">
+            <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center space-x-2 mb-6 sm:mb-8">
               <div className="flex -space-x-1">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-brand-dark-teal to-brand-warm-beige border-2 border-white dark:border-brand-dark-teal"></div>
+                  <div key={i} className="w-6 h-6 rounded-full bg-brand-dark-teal dark:bg-white border-2 border-white dark:border-brand-dark-teal"></div>
                 ))}
               </div>
               <span className="text-sm text-brand-text-dark dark:text-brand-text-light text-center">Trusted by 15,000+ entrepreneurs</span>
               <div className="flex items-center space-x-1">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Star key={i} className="w-3 h-3 fill-brand-warm-beige text-brand-warm-beige" />
+                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
             </div>
@@ -158,14 +158,14 @@ function App() {
             {/* Mock Interface */}
             <div className="bg-white dark:bg-brand-darker-teal rounded-2xl shadow-2xl border border-brand-soft-gray/30 dark:border-brand-muted-teal/50 overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-brand-dark-teal to-brand-warm-beige p-4">
+              <div className="bg-brand-dark-teal p-4">
                 <div className="flex items-center space-x-3">
                   <div className="flex space-x-1">
                     <div className="w-3 h-3 bg-red-400 rounded-full"></div>
                     <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
                     <div className="w-3 h-3 bg-green-400 rounded-full"></div>
                   </div>
-                  <span className="text-white font-semibold">Expense IQ Dashboard</span>
+                  <span className="text-brand-text-light font-semibold">Expense IQ Dashboard</span>
                 </div>
               </div>
               
@@ -176,21 +176,21 @@ function App() {
                   <div className="space-y-6">
                     <h3 className="text-lg font-semibold text-brand-text-dark dark:text-brand-text-light">Receipt Processing</h3>
                     <div className="border-2 border-dashed border-brand-warm-beige/50 rounded-xl p-6 sm:p-8 text-center hover:border-brand-warm-beige transition-colors cursor-pointer">
-                      <Upload className="w-12 h-12 text-brand-warm-beige mx-auto mb-4" />
+                      <Upload className="w-12 h-12 text-brand-dark-teal dark:text-brand-warm-beige mx-auto mb-4" />
                       <p className="text-brand-text-dark dark:text-brand-text-light mb-2">Drop receipts here or click to upload</p>
                       <p className="text-sm text-brand-text-muted dark:text-brand-soft-gray">Supports photos, PDFs, emails, and bank connections</p>
                     </div>
                     
                     {/* Sample Receipts */}
                     <div className="space-y-3">
-                      {[
-                        { name: "Coffee Shop Receipt", amount: "$12.50", category: "Meals", status: "processing" },
-                        { name: "Office Supplies", amount: "$89.99", category: "Office", status: "processed" },
-                        { name: "Uber Ride", amount: "$28.75", category: "Travel", status: "processed" }
-                      ].map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-brand-soft-gray/10 dark:bg-brand-muted-teal/30 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div className={`w-3 h-3 rounded-full ${item.status === 'processing' ? 'bg-brand-warm-beige animate-pulse' : 'bg-green-400'}`}></div>
+                                              {[
+                          { name: "Coffee Shop Receipt", amount: "$12.50", category: "Meals", status: "processing" },
+                          { name: "Office Supplies", amount: "$89.99", category: "Office", status: "processed" },
+                          { name: "Uber Ride", amount: "$28.75", category: "Travel", status: "processed" }
+                        ].map((item, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-brand-soft-gray/10 dark:bg-brand-muted-teal/30 rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-3 h-3 rounded-full ${item.status === 'processing' ? 'bg-brand-warm-beige animate-pulse' : item.category === 'Travel' ? 'bg-blue-500' : 'bg-green-400'}`}></div>
                             <div>
                               <p className="font-medium text-brand-text-dark dark:text-brand-text-light text-sm">{item.name}</p>
                               <p className="text-xs text-brand-text-muted dark:text-brand-soft-gray">{item.category}</p>
@@ -208,7 +208,7 @@ function App() {
                     <div className="bg-gradient-to-br from-brand-warm-beige/10 to-brand-dark-teal/10 dark:from-brand-warm-beige/10 dark:to-brand-muted-teal/20 p-6 rounded-xl">
                       <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-brand-warm-beige">$2,847</p>
+                          <p className="text-2xl font-bold text-brand-dark-teal dark:text-brand-warm-beige">$2,847</p>
                           <p className="text-sm text-brand-text-dark dark:text-brand-text-light">Total Expenses</p>
                         </div>
                         <div className="text-center">
@@ -221,9 +221,9 @@ function App() {
                       <div className="space-y-2">
                         {[
                           { category: "Meals", amount: 35, color: "bg-brand-warm-beige" },
-                          { category: "Travel", amount: 28, color: "bg-brand-dark-teal" },
+                          { category: "Travel", amount: 28, color: "bg-blue-500" },
                           { category: "Office", amount: 22, color: "bg-green-500" },
-                          { category: "Software", amount: 15, color: "bg-brand-muted-teal" }
+                          { category: "Software", amount: 15, color: "bg-brand-soft-gray" }
                         ].map((item, index) => (
                           <div key={index} className="flex items-center space-x-3">
                             <div className="w-16 sm:w-20 text-sm text-brand-text-dark dark:text-brand-text-light">{item.category}</div>
@@ -265,7 +265,7 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
-                icon: <Zap className="w-8 h-8 text-brand-warm-beige" />,
+                icon: <Zap className="w-8 h-8 text-brand-dark-teal dark:text-brand-warm-beige" />,
                 title: "10x Faster Processing",
                 description: "AI captures and categorizes expenses in seconds, not hours. Upload receipts via photo, email, or bank sync.",
                 stat: "Save 10+ hours/month"
@@ -283,7 +283,7 @@ function App() {
                 stat: "Average $3,200 more in deductions"
               },
               {
-                icon: <Shield className="w-8 h-8 text-brand-warm-beige" />,
+                icon: <Shield className="w-8 h-8 text-brand-dark-teal dark:text-brand-warm-beige" />,
                 title: "Audit-Ready Reports",
                 description: "Generate IRS-compliant reports instantly. All receipts stored securely with tamper-proof timestamps.",
                 stat: "100% audit protection"
@@ -295,7 +295,7 @@ function App() {
                 </div>
                 <h3 className="text-xl font-bold text-brand-text-dark dark:text-brand-text-light mb-4">{benefit.title}</h3>
                 <p className="text-brand-text-dark dark:text-brand-text-light mb-4 leading-relaxed">{benefit.description}</p>
-                <div className="text-sm font-semibold text-brand-warm-beige">{benefit.stat}</div>
+                <div className="text-sm font-semibold text-brand-dark-teal dark:text-brand-warm-beige">{benefit.stat}</div>
               </div>
             ))}
           </div>
@@ -321,7 +321,7 @@ function App() {
                 step: "01",
                 icon: <Link className="w-6 h-6" />,
                 title: "Connect Your Accounts",
-                description: "Link bank accounts, credit cards, and payment apps. Bank-level security with 256-bit encryption."
+                description: "Link bank accounts, credit cards and payment apps. Your information is encrypted end to end, not even we can see it"
               },
               {
                 step: "02",
@@ -345,26 +345,28 @@ function App() {
               <div key={index} className="relative">
                 {/* Connector Line */}
                 {index < 3 && (
-                  <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-brand-warm-beige to-brand-dark-teal transform translate-x-4"></div>
+                  <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-brand-soft-gray dark:bg-brand-muted-teal transform translate-x-4"></div>
                 )}
                 
-                <div className="bg-white dark:bg-brand-darker-teal p-6 rounded-2xl shadow-lg border border-brand-soft-gray/30 dark:border-brand-muted-teal/50 relative z-10">
+                <div className="bg-white dark:bg-brand-darker-teal p-6 rounded-2xl shadow-lg border border-brand-soft-gray/30 dark:border-brand-muted-teal/50 relative z-10 h-full flex flex-col">
                   <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-brand-dark-teal to-brand-warm-beige rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                    <div className="w-12 h-12 bg-brand-dark-teal dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-brand-dark-teal font-bold text-base">
                       {step.step}
                     </div>
-                    <div className="w-10 h-10 bg-brand-warm-beige/20 rounded-lg flex items-center justify-center text-brand-warm-beige">
-                      {step.icon}
+                    <div className="w-10 h-10 bg-brand-dark-teal/20 dark:bg-brand-warm-beige/20 rounded-lg flex items-center justify-center text-brand-dark-teal dark:text-brand-warm-beige">
+                      <div className="w-6 h-6 flex items-center justify-center">
+                        {step.icon}
+                      </div>
                     </div>
                   </div>
                   <h3 className="text-lg font-bold text-brand-text-dark dark:text-brand-text-light mb-3">{step.title}</h3>
-                  <p className="text-brand-text-dark dark:text-brand-text-light text-sm leading-relaxed">{step.description}</p>
+                  <p className="text-brand-text-dark dark:text-brand-text-light text-sm leading-relaxed flex-grow">{step.description}</p>
                 </div>
               </div>
             ))}
           </div>
           
-          <div className="text-center mt-12">
+          <div className="text-center mt-12 flex justify-center">
             <WaitlistButton onClick={openWaitlistModal} size="lg" />
           </div>
         </div>
@@ -409,18 +411,18 @@ function App() {
               <div key={index} className="bg-white dark:bg-brand-darker-teal p-8 rounded-2xl shadow-lg border border-brand-soft-gray/30 dark:border-brand-muted-teal/50">
                 <div className="flex items-center space-x-1 mb-4">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="w-5 h-5 fill-brand-warm-beige text-brand-warm-beige" />
+                    <Star key={star} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
                 <p className="text-brand-text-dark dark:text-brand-text-light mb-6 italic leading-relaxed">"{testimonial.quote}"</p>
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-brand-dark-teal to-brand-warm-beige rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="w-12 h-12 bg-brand-dark-teal dark:bg-white rounded-full flex items-center justify-center text-white dark:text-brand-dark-teal font-bold">
                     {testimonial.avatar}
                   </div>
                   <div>
                     <p className="font-semibold text-brand-text-dark dark:text-brand-text-light">{testimonial.author}</p>
                     <p className="text-sm text-brand-text-dark dark:text-brand-text-light">{testimonial.role}</p>
-                    <p className="text-xs text-brand-warm-beige">{testimonial.business}</p>
+                    <p className="text-xs text-brand-dark-teal dark:text-brand-warm-beige">{testimonial.business}</p>
                   </div>
                 </div>
               </div>
@@ -475,9 +477,9 @@ function App() {
                   className="w-full p-6 text-left flex items-center justify-between hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
                 >
                   <span className="text-lg font-semibold text-brand-text-dark dark:text-brand-text-light">{faq.question}</span>
-                  <div className="text-brand-warm-beige">
-                    {openFaq === index ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                  </div>
+                                  <div className="text-brand-dark-teal dark:text-brand-warm-beige">
+                  {openFaq === index ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                </div>
                 </button>
                 {openFaq === index && (
                   <div className="px-6 pb-6">
@@ -491,65 +493,72 @@ function App() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-brand-dark-teal to-brand-warm-beige">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
-            Ready to Reclaim Your Time?
-          </h2>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Join 15,000+ entrepreneurs who've automated their expense tracking and recovered hours every month.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8">
-            <WaitlistButton onClick={openWaitlistModal} size="lg" className="bg-white text-brand-dark-teal hover:bg-white/90" />
-            <div className="text-white/90 text-sm text-center">
-              No credit card required • Cancel anytime • Set up in 5 minutes
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-brand-cream dark:bg-brand-dark-teal">
+                  <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl sm:text-5xl font-bold text-brand-dark-teal dark:text-white mb-6">
+              Ready to Reclaim Your Time?
+            </h2>
+            <p className="text-xl text-brand-text-dark dark:text-brand-text-light font-medium mb-8 max-w-2xl mx-auto">
+              Join 15,000+ entrepreneurs who've automated their expense tracking and recovered hours every month.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8">
+              <button
+                onClick={openWaitlistModal}
+                className="group font-semibold transition-all transform hover:scale-105 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 flex items-center justify-center space-x-2 rounded-xl bg-brand-dark-teal dark:bg-white text-white dark:text-brand-dark-teal hover:bg-brand-dark-teal/90 dark:hover:bg-white/90 focus:ring-brand-dark-teal dark:focus:ring-white shadow-lg hover:shadow-xl px-8 py-4 text-lg"
+                aria-label="Join waitlist for early access to Expense IQ"
+              >
+                <span>Try It Free</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <div className="text-brand-text-dark dark:text-brand-text-light font-medium text-sm text-center">
+                No credit card required • Cancel anytime • Set up in 5 minutes
+              </div>
             </div>
-          </div>
-          
-          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-8 items-center justify-center text-white/90">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-white" />
-              <span className="text-white/90">14-day free trial</span>
+            
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-8 items-center justify-center text-brand-text-dark dark:text-brand-text-light">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4 text-brand-dark-teal dark:text-brand-warm-beige" />
+                <span className="text-brand-text-dark dark:text-brand-text-light font-medium">14-day free trial</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4 text-brand-dark-teal dark:text-brand-warm-beige" />
+                <span className="text-brand-text-dark dark:text-brand-text-light font-medium">$3,200 average savings</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4 text-brand-dark-teal dark:text-brand-warm-beige" />
+                <span className="text-brand-text-dark dark:text-brand-text-light font-medium">10+ hours saved monthly</span>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-white" />
-              <span className="text-white/90">$3,200 average savings</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-white" />
-              <span className="text-white/90">10+ hours saved monthly</span>
-            </div>
-          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-brand-dark-teal text-white py-16 px-4 sm:px-6 lg:px-8">
+      <footer className="bg-brand-dark-teal text-brand-text-light py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             {/* Logo and Description */}
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-brand-warm-beige to-brand-light-beige rounded-lg flex items-center justify-center">
-                  <Brain className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 bg-brand-dark-teal dark:bg-white rounded-lg flex items-center justify-center">
+                  <Brain className="w-5 h-5 text-white dark:text-brand-dark-teal" />
                 </div>
                 <span className="text-2xl font-bold">Expense IQ</span>
               </div>
-              <p className="text-white/70 mb-6 max-w-md">
+              <p className="text-brand-text-light/70 mb-6 max-w-md">
                 The AI-powered expense management platform that saves entrepreneurs 10+ hours per month and maximizes tax deductions.
               </p>
               <div className="flex space-x-4">
-                <Twitter className="w-5 h-5 text-white/70 hover:text-brand-warm-beige cursor-pointer transition-colors" />
-                <Linkedin className="w-5 h-5 text-white/70 hover:text-brand-warm-beige cursor-pointer transition-colors" />
-                <Mail className="w-5 h-5 text-white/70 hover:text-brand-warm-beige cursor-pointer transition-colors" />
+                <Twitter className="w-5 h-5 text-brand-text-light/70 hover:text-brand-warm-beige cursor-pointer transition-colors" />
+                <Linkedin className="w-5 h-5 text-brand-text-light/70 hover:text-brand-warm-beige cursor-pointer transition-colors" />
+                <Mail className="w-5 h-5 text-brand-text-light/70 hover:text-brand-warm-beige cursor-pointer transition-colors" />
               </div>
             </div>
             
             {/* Product Links */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-white/70">
+              <ul className="space-y-2 text-brand-text-light/70">
                 <li><a href="#" className="hover:text-brand-warm-beige transition-colors">Features</a></li>
                 <li><a href="#" className="hover:text-brand-warm-beige transition-colors">Pricing</a></li>
                 <li><a href="#" className="hover:text-brand-warm-beige transition-colors">Integrations</a></li>
@@ -560,7 +569,7 @@ function App() {
             {/* Support Links */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-white/70">
+              <ul className="space-y-2 text-brand-text-light/70">
                 <li><a href="#" className="hover:text-brand-warm-beige transition-colors">Help Center</a></li>
                 <li><a href="#" className="hover:text-brand-warm-beige transition-colors">Contact Us</a></li>
                 <li><a href="#" className="hover:text-brand-warm-beige transition-colors">Privacy Policy</a></li>
@@ -571,12 +580,12 @@ function App() {
           
           <div className="border-t border-white/20 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-white/70 text-sm">
+              <p className="text-brand-text-light/70 text-sm">
                 © 2025 Expense IQ. All rights reserved.
               </p>
               <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 mt-4 md:mt-0">
-                <span className="text-sm text-white/80">🔒 SOC 2 Type II Compliant</span>
-                <span className="text-sm text-white/80">🏦 Bank-Level Security</span>
+                <span className="text-sm text-brand-text-light/80">🔒 SOC 2 Type II Compliant</span>
+                <span className="text-sm text-brand-text-light/80">🏦 Bank-Level Security</span>
               </div>
             </div>
           </div>

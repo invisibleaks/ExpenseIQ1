@@ -213,8 +213,8 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
             <>
               {/* Header */}
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-r from-brand-dark-teal to-brand-warm-beige rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Mail className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-brand-dark-teal dark:bg-white rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Mail className="w-8 h-8 text-white dark:text-brand-dark-teal" />
                 </div>
                 <h2 id="waitlist-modal-title" className="text-2xl font-bold text-brand-text-dark dark:text-brand-text-light mb-2">
                   Try It Free
@@ -301,7 +301,7 @@ const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose }) => {
                 <button
                   type="submit"
                   disabled={isSubmitting || !!errors.name || !!errors.email}
-                  className="w-full bg-gradient-to-r from-brand-dark-teal to-brand-warm-beige text-white py-3 px-6 rounded-xl font-semibold hover:from-brand-dark-teal/90 hover:to-brand-warm-beige/90 focus:ring-2 focus:ring-brand-warm-beige focus:ring-offset-2 dark:focus:ring-offset-brand-dark-teal transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+                  className="w-full bg-brand-dark-teal dark:bg-white text-white dark:text-brand-dark-teal py-3 px-6 rounded-xl font-semibold hover:bg-brand-dark-teal/90 dark:hover:bg-white/90 focus:ring-2 focus:ring-brand-dark-teal dark:focus:ring-white focus:ring-offset-2 dark:focus:ring-offset-brand-dark-teal transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
                   aria-describedby="submit-button-description"
                 >
                   {isSubmitting ? (
