@@ -518,16 +518,16 @@ function App() {
             
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-8 items-center justify-center text-brand-text-dark dark:text-brand-text-light">
               <div className="flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-brand-dark-teal dark:text-brand-warm-beige" />
-                <span className="text-brand-text-dark dark:text-brand-text-light font-medium">14-day free trial</span>
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="font-semibold">14-day free trial</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-brand-dark-teal dark:text-brand-warm-beige" />
-                <span className="text-brand-text-dark dark:text-brand-text-light font-medium">$3,200 average savings</span>
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="font-semibold">$3,200 average savings</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-brand-dark-teal dark:text-brand-warm-beige" />
-                <span className="text-brand-text-dark dark:text-brand-text-light font-medium">10+ hours saved monthly</span>
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="font-semibold">10+ hours saved monthly</span>
               </div>
             </div>
         </div>
