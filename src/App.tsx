@@ -76,6 +76,12 @@ function App() {
               <a href="#features" className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors">Features</a>
               <a href="#pricing" className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors">Pricing</a>
               <button
+                onClick={() => setCurrentPage('signup')}
+                className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors"
+              >
+                Sign Up
+              </button>
+              <button
                 onClick={() => setDarkMode(!darkMode)}
                 className="p-2 rounded-lg bg-brand-soft-gray/20 dark:bg-brand-muted-teal/50 hover:bg-brand-soft-gray/30 dark:hover:bg-brand-muted-teal/70 transition-colors"
                 aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
@@ -106,9 +112,12 @@ function App() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8 sm:mb-12">
               <WaitlistButton onClick={openWaitlistModal} size="lg" />
-              <button className="border-2 border-brand-soft-gray dark:border-brand-muted-teal text-brand-text-muted dark:text-brand-soft-gray px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:border-brand-dark-teal hover:text-brand-dark-teal dark:hover:border-brand-warm-beige dark:hover:text-brand-warm-beige transition-all flex items-center space-x-2">
-                <span>Watch Demo</span>
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              <button 
+                onClick={() => setCurrentPage('signup')}
+                className="border-2 border-brand-soft-gray dark:border-brand-muted-teal text-brand-text-muted dark:text-brand-soft-gray px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:border-brand-dark-teal hover:text-brand-dark-teal dark:hover:border-brand-warm-beige dark:hover:text-brand-warm-beige transition-all flex items-center space-x-2"
+              >
+                <span>Sign Up Free</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
 
@@ -374,7 +383,13 @@ function App() {
           </div>
           
           <div className="text-center mt-12 flex justify-center">
-            <WaitlistButton onClick={openWaitlistModal} size="lg" />
+            <button
+              onClick={() => setCurrentPage('signup')}
+              className="group font-semibold transition-all transform hover:scale-105 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 flex items-center justify-center space-x-2 rounded-xl bg-brand-dark-teal dark:bg-white text-white dark:text-brand-dark-teal hover:bg-brand-dark-teal/90 dark:hover:bg-white/90 focus:ring-brand-dark-teal dark:focus:ring-white shadow-lg hover:shadow-xl px-8 py-4 text-lg"
+            >
+              <span>Get Started Free</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
         </div>
       </section>
@@ -511,11 +526,11 @@ function App() {
             
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8">
               <button
-                onClick={openWaitlistModal}
+                onClick={() => setCurrentPage('signup')}
                 className="group font-semibold transition-all transform hover:scale-105 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 flex items-center justify-center space-x-2 rounded-xl bg-brand-dark-teal dark:bg-white text-white dark:text-brand-dark-teal hover:bg-brand-dark-teal/90 dark:hover:bg-white/90 focus:ring-brand-dark-teal dark:focus:ring-white shadow-lg hover:shadow-xl px-8 py-4 text-lg"
-                aria-label="Join waitlist for early access to Expense IQ"
+                aria-label="Sign up for Expense IQ"
               >
-                <span>Try It Free</span>
+                <span>Start Free Trial</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
               <div className="text-brand-text-dark dark:text-brand-text-light font-medium text-sm text-center">
@@ -526,7 +541,7 @@ function App() {
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-8 items-center justify-center text-brand-text-dark dark:text-brand-text-light">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="font-semibold">14-day free trial</span>
+                <span className="font-semibold">Start your free trial</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
@@ -534,7 +549,15 @@ function App() {
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="font-semibold">10+ hours saved monthly</span>
+                <span className="font-semibold">
+                  <button 
+                    onClick={() => setCurrentPage('signup')}
+                    onClick={() => setCurrentPage('signup')}
+                    className="underline hover:text-brand-warm-beige transition-colors"
+                  >
+                    Sign up here
+                  </button>
+                </span>
               </div>
             </div>
         </div>
