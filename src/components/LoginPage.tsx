@@ -21,12 +21,14 @@ interface LoginPageProps {
   onBack: () => void;
   onNavigateToSignup: () => void;
   onNavigateToForgotPassword: () => void;
+  onLoginSuccess?: () => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ 
   onBack, 
   onNavigateToSignup, 
-  onNavigateToForgotPassword 
+  onNavigateToForgotPassword,
+  onLoginSuccess
 }) => {
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',

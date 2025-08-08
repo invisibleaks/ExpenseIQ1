@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AccountPage from './components/AccountPage';
 import SignUpPage from './components/SignUpPage';
 import LoginPage from './components/LoginPage';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
@@ -30,7 +31,7 @@ import {
 } from 'lucide-react';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'signup' | 'login' | 'forgot-password'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'signup' | 'login' | 'forgot-password' | 'account'>('home');
   const [darkMode, setDarkMode] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
@@ -60,6 +61,8 @@ function App() {
   const navigateToSignup = () => setCurrentPage('signup');
   const navigateToLogin = () => setCurrentPage('login');
   const navigateToForgotPassword = () => setCurrentPage('forgot-password');
+  const navigateToAccount = () => setCurrentPage('account');
+  const handleLogout = () => setCurrentPage('home');
 
   // Show signup page if requested
   if (currentPage === 'signup') {
@@ -78,6 +81,7 @@ function App() {
         onBack={navigateToHome}
         onNavigateToSignup={navigateToSignup}
         onNavigateToForgotPassword={navigateToForgotPassword}
+        onLoginSuccess={navigateToAccount}
       />
     );
   }
@@ -88,6 +92,16 @@ function App() {
       <ForgotPasswordPage 
         onBack={navigateToLogin}
         onNavigateToLogin={navigateToLogin}
+      />
+    );
+  }
+
+  // Show account page if requested
+  if (currentPage === 'account') {
+    return (
+      <AccountPage 
+        onBack={navigateToHome}
+        onLogout={handleLogout}
       />
     );
   }
@@ -120,6 +134,12 @@ function App() {
                 className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors"
               >
                 Sign Up
+              </button>
+              <button
+                onClick={navigateToAccount}
+                className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors"
+              >
+                Dashboard
               </button>
               <button
                 onClick={() => setDarkMode(!darkMode)}
