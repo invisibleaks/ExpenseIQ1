@@ -27,7 +27,9 @@ import {
   ChevronDown,
   Twitter,
   Linkedin,
-  Mail
+  Mail,
+  Menu,
+  X
 } from 'lucide-react';
 
 function App() {
@@ -35,6 +37,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (darkMode) {
@@ -44,6 +47,10 @@ function App() {
     }
   }, [darkMode]);
 
+  // Close mobile menu when page changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [currentPage]);
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
   };
@@ -113,6 +120,7 @@ function App() {
       <nav className="fixed top-0 w-full z-50 bg-white/90 dark:bg-brand-dark-teal/90 backdrop-blur-md border-b border-brand-soft-gray/20 dark:border-brand-muted-teal/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
+            {/* Logo */}
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-brand-dark-teal dark:bg-white rounded-lg flex items-center justify-center">
                 <Brain className="w-5 h-5 text-white dark:text-brand-dark-teal" />
@@ -120,7 +128,8 @@ function App() {
               <span className="text-xl font-bold text-brand-text-dark dark:text-brand-text-light">Expense IQ</span>
             </div>
           
-            <div className="hidden sm:flex items-center space-x-6">
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center space-x-6">
               <a href="#features" className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors">Features</a>
               <a href="#pricing" className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors">Pricing</a>
               <button
@@ -150,6 +159,72 @@ function App() {
               </button>
               <WaitlistButton onClick={openWaitlistModal} size="sm" />
             </div>
+
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden flex items-center space-x-2">
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="p-2 rounded-lg bg-brand-soft-gray/20 dark:bg-brand-muted-teal/50 hover:bg-brand-soft-gray/30 dark:hover:bg-brand-muted-teal/70 transition-colors"
+                aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+              >
+                {darkMode ? <Sun className="w-4 h-4 text-brand-warm-beige" /> : <Moon className="w-4 h-4 text-brand-dark-teal" />}
+              </button>
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-lg bg-brand-soft-gray/20 dark:bg-brand-muted-teal/50 hover:bg-brand-soft-gray/30 dark:hover:bg-brand-muted-teal/70 transition-colors"
+                aria-label="Toggle mobile menu"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-5 h-5 text-brand-text-dark dark:text-brand-text-light" />
+                ) : (
+                  <Menu className="w-5 h-5 text-brand-text-dark dark:text-brand-text-light" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Menu */}
+          {isMobileMenuOpen && (
+            <div className="lg:hidden border-t border-brand-soft-gray/20 dark:border-brand-muted-teal/50 bg-white/95 dark:bg-brand-dark-teal/95 backdrop-blur-md">
+              <div className="px-2 pt-2 pb-3 space-y-1">
+                <a 
+                  href="#features" 
+                  className="block px-3 py-2 rounded-md text-base font-medium text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Features
+                </a>
+                <a 
+                  href="#pricing" 
+                  className="block px-3 py-2 rounded-md text-base font-medium text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Pricing
+                </a>
+                <button
+                  onClick={navigateToLogin}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={navigateToSignup}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
+                >
+                  Sign Up
+                </button>
+                <button
+                  onClick={navigateToAccount}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
+                >
+                  Dashboard
+                </button>
+                <div className="pt-2">
+                  <WaitlistButton onClick={openWaitlistModal} size="md" className="w-full" />
+                </div>
+              </div>
+            </div>
+          )}
           </div>
         </div>
       </nav>
