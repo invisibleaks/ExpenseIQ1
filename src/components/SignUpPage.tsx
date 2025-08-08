@@ -23,9 +23,11 @@ interface FormTouched {
   password: boolean;
   confirmPassword: boolean;
   businessType: boolean;
+  onBack: () => void;
+  onNavigateToLogin: () => void;
 }
 
-const SignUpPage: React.FC = () => {
+const SignUpPage: React.FC<SignUpPageProps> = ({ onBack, onNavigateToLogin }) => {
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     email: '',
@@ -200,7 +202,7 @@ const SignUpPage: React.FC = () => {
           <div className="flex items-center justify-between h-16">
             {/* Back to Home Link */}
             <button 
-              onClick={() => window.history.back()}
+              onClick={onBack}
               className="flex items-center space-x-2 text-brand-muted-teal hover:text-brand-warm-beige transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -478,7 +480,7 @@ const SignUpPage: React.FC = () => {
                 <p className="text-sm text-brand-soft-gray">
                   Already have an account?{' '}
                   <button
-                    type="button"
+                    onClick={onNavigateToLogin}
                     className="text-brand-muted-teal hover:text-brand-dark-teal font-medium transition-colors"
                   >
                     Log in

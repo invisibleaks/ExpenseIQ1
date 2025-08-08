@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SignUpPage from './components/SignUpPage';
+import LoginPage from './components/LoginPage';
+import ForgotPasswordPage from './components/ForgotPasswordPage';
 import WaitlistModal from './components/WaitlistModal';
 import WaitlistButton from './components/WaitlistButton';
 import { 
@@ -28,7 +30,7 @@ import {
 } from 'lucide-react';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'signup'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'signup' | 'login' | 'forgot-password'>('home');
   const [darkMode, setDarkMode] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
@@ -53,9 +55,41 @@ function App() {
     setIsWaitlistModalOpen(false);
   };
 
+  // Navigation handlers
+  const navigateToHome = () => setCurrentPage('home');
+  const navigateToSignup = () => setCurrentPage('signup');
+  const navigateToLogin = () => setCurrentPage('login');
+  const navigateToForgotPassword = () => setCurrentPage('forgot-password');
+
   // Show signup page if requested
   if (currentPage === 'signup') {
-    return <SignUpPage />;
+    return (
+      <SignUpPage 
+        onBack={navigateToHome}
+        onNavigateToLogin={navigateToLogin}
+      />
+    );
+  }
+
+  // Show login page if requested
+  if (currentPage === 'login') {
+    return (
+      <LoginPage 
+        onBack={navigateToHome}
+        onNavigateToSignup={navigateToSignup}
+        onNavigateToForgotPassword={navigateToForgotPassword}
+      />
+    );
+  }
+
+  // Show forgot password page if requested
+  if (currentPage === 'forgot-password') {
+    return (
+      <ForgotPasswordPage 
+        onBack={navigateToLogin}
+        onNavigateToLogin={navigateToLogin}
+      />
+    );
   }
 
   return (
@@ -76,7 +110,13 @@ function App() {
               <a href="#features" className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors">Features</a>
               <a href="#pricing" className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors">Pricing</a>
               <button
-                onClick={() => setCurrentPage('signup')}
+                onClick={navigateToLogin}
+                className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors"
+              >
+                Log In
+              </button>
+              <button
+                onClick={navigateToSignup}
                 className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors"
               >
                 Sign Up
@@ -113,7 +153,7 @@ function App() {
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8 sm:mb-12">
               <WaitlistButton onClick={openWaitlistModal} size="lg" />
               <button 
-                onClick={() => setCurrentPage('signup')}
+                onClick={navigateToSignup}
                 className="border-2 border-brand-soft-gray dark:border-brand-muted-teal text-brand-text-muted dark:text-brand-soft-gray px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:border-brand-dark-teal hover:text-brand-dark-teal dark:hover:border-brand-warm-beige dark:hover:text-brand-warm-beige transition-all flex items-center space-x-2"
               >
                 <span>Sign Up Free</span>
@@ -384,7 +424,7 @@ function App() {
           
           <div className="text-center mt-12 flex justify-center">
             <button
-              onClick={() => setCurrentPage('signup')}
+              onClick={navigateToSignup}
               className="group font-semibold transition-all transform hover:scale-105 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 flex items-center justify-center space-x-2 rounded-xl bg-brand-dark-teal dark:bg-white text-white dark:text-brand-dark-teal hover:bg-brand-dark-teal/90 dark:hover:bg-white/90 focus:ring-brand-dark-teal dark:focus:ring-white shadow-lg hover:shadow-xl px-8 py-4 text-lg"
             >
               <span>Get Started Free</span>
@@ -526,7 +566,7 @@ function App() {
             
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8">
               <button
-                onClick={() => setCurrentPage('signup')}
+                onClick={navigateToSignup}
                 className="group font-semibold transition-all transform hover:scale-105 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 flex items-center justify-center space-x-2 rounded-xl bg-brand-dark-teal dark:bg-white text-white dark:text-brand-dark-teal hover:bg-brand-dark-teal/90 dark:hover:bg-white/90 focus:ring-brand-dark-teal dark:focus:ring-white shadow-lg hover:shadow-xl px-8 py-4 text-lg"
                 aria-label="Sign up for Expense IQ"
               >
@@ -551,8 +591,7 @@ function App() {
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <span className="font-semibold">
                   <button 
-                    onClick={() => setCurrentPage('signup')}
-                    onClick={() => setCurrentPage('signup')}
+                    onClick={navigateToSignup}
                     className="underline hover:text-brand-warm-beige transition-colors"
                   >
                     Sign up here
