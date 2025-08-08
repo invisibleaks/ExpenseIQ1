@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SignUpPage from './components/SignUpPage';
 import WaitlistModal from './components/WaitlistModal';
 import WaitlistButton from './components/WaitlistButton';
 import { 
@@ -27,6 +28,7 @@ import {
 } from 'lucide-react';
 
 function App() {
+  const [currentPage, setCurrentPage] = useState<'home' | 'signup'>('home');
   const [darkMode, setDarkMode] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
@@ -50,6 +52,11 @@ function App() {
   const closeWaitlistModal = () => {
     setIsWaitlistModalOpen(false);
   };
+
+  // Show signup page if requested
+  if (currentPage === 'signup') {
+    return <SignUpPage />;
+  }
 
   return (
 <div className={darkMode ? 'dark' : ''}>
