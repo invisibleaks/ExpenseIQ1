@@ -37,14 +37,23 @@ interface Expense {
   merchant: string;
   amount: number;
   date: string;
-  category?: string;
+  category: string;
+  categoryConfidence: number;
   paymentMethod?: string;
   source: 'upload' | 'camera' | 'voice' | 'manual';
-  confidence?: number;
+  confidence: number;
   status: 'unreviewed' | 'reviewed' | 'flagged';
   receiptUrl?: string;
   notes?: string;
   tags?: string[];
+  businessId: string;
+  businessName?: string;
+}
+
+interface Business {
+  id: string;
+  name: string;
+  type: string;
 }
 
 interface AccountPageProps {
@@ -58,15 +67,32 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
   const [selectedExpenses, setSelectedExpenses] = useState<string[]>([]);
   const [showAddDropdown, setShowAddDropdown] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [showBusinessModal, setShowBusinessModal] = useState(false);
   const [showReceiptPreview, setShowReceiptPreview] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [dateRange, setDateRange] = useState('This Month');
   const [isUploading, setIsUploading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [activeWorkspace, setActiveWorkspace] = useState<string>('');
+  const [workspaceDropdownOpen, setWorkspaceDropdownOpen] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropzoneRef = useRef<HTMLDivElement>(null);
+  const workspaceSelectorRef = useRef<HTMLButtonElement>(null);
+
+  // Mock businesses data
+  const businesses: Business[] = [
+    { id: 'biz1', name: 'My Consulting LLC', type: 'consulting' },
+    { id: 'biz2', name: 'Design Studio Inc', type: 'design' },
+    { id: 'biz3', name: 'E-commerce Store', type: 'retail' }
+  ];
+
+  const workspaces = [
+    { id: '', name: 'Select a business...' },
+    ...businesses.map(b => ({ id: b.id, name: b.name }))
+  ];
 
   // Mock data
   const [expenses, setExpenses] = useState<Expense[]>([
@@ -75,10 +101,14 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
       merchant: 'Starbucks Coffee',
       amount: 12.50,
       date: '2025-01-15',
+      category: 'Meals',
+      categoryConfidence: 95,
       source: 'upload',
       confidence: 95,
       status: 'unreviewed',
-      receiptUrl: '/api/receipts/1.jpg'
+      receiptUrl: '/api/receipts/1.jpg',
+      businessId: 'biz1',
+      businessName: 'My Consulting LLC'
     },
     {
       id: '2',
@@ -86,11 +116,14 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
       amount: 89.99,
       date: '2025-01-14',
       category: 'Office Supplies',
+      categoryConfidence: 88,
       paymentMethod: 'Credit Card',
       source: 'camera',
       confidence: 88,
       status: 'reviewed',
-      tags: ['tax-deductible']
+      tags: ['tax-deductible'],
+      businessId: 'biz1',
+      businessName: 'My Consulting LLC'
     },
     {
       id: '3',
@@ -98,24 +131,73 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
       amount: 28.75,
       date: '2025-01-13',
       category: 'Travel',
+      categoryConfidence: 92,
       paymentMethod: 'Credit Card',
       source: 'voice',
-      status: 'reviewed'
+      confidence: 92,
+      status: 'reviewed',
+      businessId: 'biz2',
+      businessName: 'Design Studio Inc'
     }
   ]);
 
   const categories = ['Meals', 'Travel', 'Office Supplies', 'Software', 'Marketing', 'Other'];
   const paymentMethods = ['Credit Card', 'Debit Card', 'Cash', 'Bank Transfer'];
 
-  // Computed values
-  const unreviewedExpenses = expenses.filter(e => e.status === 'unreviewed');
-  const reviewedExpenses = expenses.filter(e => e.status === 'reviewed');
-  const thisMonthTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
+  // Computed values - filtered by active workspace
+  const workspaceExpenses = expenses.filter(e => !activeWorkspace || e.businessId === activeWorkspace);
+  const unreviewedExpenses = workspaceExpenses.filter(e => e.status === 'unreviewed');
+  const reviewedExpenses = workspaceExpenses.filter(e => e.status === 'reviewed');
+  const thisMonthTotal = workspaceExpenses.reduce((sum, e) => sum + e.amount, 0);
   const topCategories = ['Meals (35%)', 'Travel (28%)', 'Office (22%)'];
+
+  // Get confidence color for category chips
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 90) return 'bg-green-100 text-green-700 border-green-200';
+    if (confidence >= 70) return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+    return 'bg-red-100 text-red-700 border-red-200';
+  };
+
+  // Check if actions should be disabled
+  const isActionsDisabled = !activeWorkspace;
+
+  // Handle workspace selection
+  const handleWorkspaceChange = (workspaceId: string) => {
+    setActiveWorkspace(workspaceId);
+    setWorkspaceDropdownOpen(false);
+    // Store in user preferences (localStorage for demo)
+    if (workspaceId) {
+      localStorage.setItem('last_active_business_id', workspaceId);
+    }
+  };
+
+  // Load last active workspace on mount
+  useEffect(() => {
+    const lastWorkspace = localStorage.getItem('last_active_business_id');
+    if (lastWorkspace && businesses.find(b => b.id === lastWorkspace)) {
+      setActiveWorkspace(lastWorkspace);
+    }
+  }, []);
+
+  // Handle disabled action clicks
+  const handleDisabledAction = () => {
+    setShowBusinessModal(true);
+  };
+
+  // Focus workspace selector
+  const focusWorkspaceSelector = () => {
+    setShowBusinessModal(false);
+    workspaceSelectorRef.current?.focus();
+    setWorkspaceDropdownOpen(true);
+  };
 
   // File upload handling
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
+    if (!activeWorkspace) {
+      handleDisabledAction();
+      return;
+    }
     
     setIsUploading(true);
     
@@ -126,9 +208,13 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
         merchant: 'New Receipt',
         amount: Math.random() * 100,
         date: new Date().toISOString().split('T')[0],
+        category: 'Meals', // AI categorization
+        categoryConfidence: Math.floor(Math.random() * 30) + 70,
         source: 'upload',
         confidence: Math.floor(Math.random() * 20) + 80,
-        status: 'unreviewed'
+        status: 'unreviewed',
+        businessId: activeWorkspace,
+        businessName: businesses.find(b => b.id === activeWorkspace)?.name
       };
       
       setExpenses(prev => [newExpense, ...prev]);
@@ -138,6 +224,11 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
 
   // Voice recording
   const handleVoiceRecord = () => {
+    if (!activeWorkspace) {
+      handleDisabledAction();
+      return;
+    }
+    
     setIsRecording(true);
     setTimeout(() => {
       const newExpense: Expense = {
@@ -145,14 +236,38 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
         merchant: 'Voice Entry',
         amount: Math.random() * 50,
         date: new Date().toISOString().split('T')[0],
+        category: 'Travel', // AI categorization
+        categoryConfidence: Math.floor(Math.random() * 25) + 75,
         source: 'voice',
         confidence: 75,
-        status: 'unreviewed'
+        status: 'unreviewed',
+        businessId: activeWorkspace,
+        businessName: businesses.find(b => b.id === activeWorkspace)?.name
       };
       
       setExpenses(prev => [newExpense, ...prev]);
       setIsRecording(false);
     }, 3000);
+  };
+
+  // Handle camera capture
+  const handleCameraCapture = () => {
+    if (!activeWorkspace) {
+      handleDisabledAction();
+      return;
+    }
+    // Camera capture logic would go here
+    console.log('Camera capture initiated');
+  };
+
+  // Handle manual entry
+  const handleManualEntry = () => {
+    if (!activeWorkspace) {
+      handleDisabledAction();
+      return;
+    }
+    // Manual entry logic would go here
+    console.log('Manual entry initiated');
   };
 
   // Expense actions
@@ -166,16 +281,47 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
     setExpenses(prev => prev.filter(e => e.id !== id));
   };
 
+  // Update expense business
+  const updateExpenseBusiness = (expenseId: string, businessId: string) => {
+    const business = businesses.find(b => b.id === businessId);
+    setExpenses(prev => prev.map(e => 
+      e.id === expenseId 
+        ? { ...e, businessId, businessName: business?.name }
+        : e
+    ));
+  };
+
+  // Update expense category
+  const updateExpenseCategory = (expenseId: string, category: string) => {
+    setExpenses(prev => prev.map(e => 
+      e.id === expenseId 
+        ? { ...e, category, categoryConfidence: 100 } // Override confidence to 100% for manual edits
+        : e
+    ));
+  };
+
   // Bulk actions
   const handleBulkAccept = () => {
+    // Only operate on expenses in active workspace
+    const workspaceSelectedExpenses = selectedExpenses.filter(id => {
+      const expense = expenses.find(e => e.id === id);
+      return expense && (!activeWorkspace || expense.businessId === activeWorkspace);
+    });
+    
     setExpenses(prev => prev.map(e => 
-      selectedExpenses.includes(e.id) ? { ...e, status: 'reviewed' as const } : e
+      workspaceSelectedExpenses.includes(e.id) ? { ...e, status: 'reviewed' as const } : e
     ));
     setSelectedExpenses([]);
   };
 
   const handleBulkDelete = () => {
-    setExpenses(prev => prev.filter(e => !selectedExpenses.includes(e.id)));
+    // Only operate on expenses in active workspace
+    const workspaceSelectedExpenses = selectedExpenses.filter(id => {
+      const expense = expenses.find(e => e.id === id);
+      return expense && (!activeWorkspace || expense.businessId === activeWorkspace);
+    });
+    
+    setExpenses(prev => prev.filter(e => !workspaceSelectedExpenses.includes(e.id)));
     setSelectedExpenses([]);
   };
 
@@ -185,6 +331,11 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
     const matchesCategory = !selectedCategory || expense.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  // Get active workspace name
+  const activeWorkspaceName = activeWorkspace 
+    ? businesses.find(b => b.id === activeWorkspace)?.name || 'Unknown Business'
+    : 'Select a business...';
 
   return (
     <div className="min-h-screen bg-brand-light-beige">
@@ -204,10 +355,43 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
             <div className="hidden md:flex items-center space-x-4">
               {/* Workspace Switcher */}
               <div className="relative">
-                <button className="flex items-center space-x-2 px-3 py-2 rounded-lg border border-brand-soft-gray/30 hover:border-brand-muted-teal transition-colors">
-                  <span className="text-sm font-medium text-brand-text-dark">My Business</span>
+                <button 
+                  ref={workspaceSelectorRef}
+                  onClick={() => setWorkspaceDropdownOpen(!workspaceDropdownOpen)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors ${
+                    activeWorkspace 
+                      ? 'border-brand-muted-teal/50 hover:border-brand-muted-teal' 
+                      : 'border-yellow-300 bg-yellow-50 hover:border-yellow-400'
+                  }`}
+                >
+                  <span className={`text-sm font-medium ${
+                    activeWorkspace ? 'text-brand-text-dark' : 'text-yellow-700'
+                  }`}>
+                    {activeWorkspaceName}
+                  </span>
                   <ChevronDown className="w-4 h-4 text-brand-soft-gray" />
                 </button>
+                
+                {workspaceDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-brand-soft-gray/20 py-2 z-50">
+                    {workspaces.map((workspace) => (
+                      <button
+                        key={workspace.id}
+                        onClick={() => handleWorkspaceChange(workspace.id)}
+                        disabled={workspace.id === ''}
+                        className={`w-full px-4 py-2 text-left text-sm transition-colors ${
+                          workspace.id === activeWorkspace
+                            ? 'bg-brand-dark-teal/10 text-brand-dark-teal font-medium'
+                            : workspace.id === ''
+                            ? 'text-brand-soft-gray cursor-not-allowed'
+                            : 'text-brand-text-dark hover:bg-brand-soft-gray/10'
+                        }`}
+                      >
+                        {workspace.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Date Range Picker */}
@@ -265,7 +449,13 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
           <div className="relative">
             <button
               onClick={() => setShowAddDropdown(!showAddDropdown)}
-              className="bg-brand-dark-teal text-white px-6 py-3 rounded-xl font-semibold hover:bg-brand-dark-teal/90 focus:ring-2 focus:ring-brand-dark-teal focus:ring-offset-2 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2"
+              disabled={isActionsDisabled}
+              title={isActionsDisabled ? "Select a business to start adding expenses" : ""}
+              className={`px-6 py-3 rounded-xl font-semibold focus:ring-2 focus:ring-offset-2 transition-all shadow-lg flex items-center space-x-2 ${
+                isActionsDisabled
+                  ? 'bg-brand-soft-gray text-brand-text-muted cursor-not-allowed'
+                  : 'bg-brand-dark-teal text-white hover:bg-brand-dark-teal/90 focus:ring-brand-dark-teal transform hover:scale-105 hover:shadow-xl'
+              }`}
             >
               <Plus className="w-5 h-5" />
               <span>Add Expense</span>
@@ -275,7 +465,11 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
             {showAddDropdown && (
               <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-brand-soft-gray/20 py-2 z-50">
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => {
+                    setShowAddDropdown(false);
+                    isActionsDisabled ? handleDisabledAction() : fileInputRef.current?.click();
+                  }}
+                  disabled={isActionsDisabled}
                   className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3"
                 >
                   <Upload className="w-5 h-5 text-brand-dark-teal" />
@@ -285,7 +479,12 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                   </div>
                 </button>
                 
-                <button className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3">
+                <button 
+                  onClick={() => {
+                    setShowAddDropdown(false);
+                    isActionsDisabled ? handleDisabledAction() : handleCameraCapture();
+                  }}
+                  className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3">
                   <Camera className="w-5 h-5 text-brand-dark-teal" />
                   <div>
                     <div className="font-medium text-brand-text-dark">Camera Capture</div>
@@ -294,8 +493,11 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                 </button>
                 
                 <button
-                  onClick={handleVoiceRecord}
-                  disabled={isRecording}
+                  onClick={() => {
+                    setShowAddDropdown(false);
+                    isActionsDisabled ? handleDisabledAction() : handleVoiceRecord();
+                  }}
+                  disabled={isRecording || isActionsDisabled}
                   className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3 disabled:opacity-50"
                 >
                   <Mic className={`w-5 h-5 text-brand-dark-teal ${isRecording ? 'animate-pulse' : ''}`} />
@@ -307,7 +509,12 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                   </div>
                 </button>
                 
-                <button className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3">
+                <button 
+                  onClick={() => {
+                    setShowAddDropdown(false);
+                    isActionsDisabled ? handleDisabledAction() : handleManualEntry();
+                  }}
+                  className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3">
                   <Edit3 className="w-5 h-5 text-brand-dark-teal" />
                   <div>
                     <div className="font-medium text-brand-text-dark">Manual Entry</div>
@@ -501,46 +708,70 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                           <div className="flex items-center space-x-3 mb-2">
                             <h4 className="font-semibold text-brand-text-dark">{expense.merchant}</h4>
                             <span className="text-2xl font-bold text-brand-dark-teal">${expense.amount.toFixed(2)}</span>
-                            {expense.confidence && (
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                expense.confidence >= 90 
-                                  ? 'bg-green-100 text-green-700'
-                                  : expense.confidence >= 70
-                                  ? 'bg-yellow-100 text-yellow-700'
-                                  : 'bg-red-100 text-red-700'
-                              }`}>
-                                {expense.confidence}% confident
-                              </span>
-                            )}
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              expense.confidence >= 90 
+                                ? 'bg-green-100 text-green-700'
+                                : expense.confidence >= 70
+                                ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-red-100 text-red-700'
+                            }`}>
+                              {expense.confidence}% confident
+                            </span>
                           </div>
                           
                           <div className="flex items-center space-x-4 text-sm text-brand-text-muted mb-4">
                             <span>{expense.date}</span>
                             <span className="capitalize">{expense.source}</span>
+                            <span className="text-brand-dark-teal">{expense.businessName}</span>
+                          </div>
+
+                          {/* AI Category Chip */}
+                          <div className="mb-4">
+                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getConfidenceColor(expense.categoryConfidence)}`}>
+                              <Brain className="w-3 h-3 mr-1" />
+                              {expense.category} ({expense.categoryConfidence}%)
+                            </div>
                           </div>
 
                           {/* Quick Edit Fields */}
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <select className="px-3 py-2 border border-brand-soft-gray/30 rounded-lg focus:ring-2 focus:ring-brand-dark-teal focus:border-transparent">
-                              <option value="">Select category</option>
+                            {/* Business Selector */}
+                            <select 
+                              value={expense.businessId}
+                              onChange={(e) => updateExpenseBusiness(expense.id, e.target.value)}
+                              className="px-3 py-2 border border-brand-soft-gray/30 rounded-lg focus:ring-2 focus:ring-brand-dark-teal focus:border-transparent"
+                            >
+                              {businesses.map(business => (
+                                <option key={business.id} value={business.id}>{business.name}</option>
+                              ))}
+                            </select>
+                            
+                            {/* Category Selector */}
+                            <select 
+                              value={expense.category}
+                              onChange={(e) => updateExpenseCategory(expense.id, e.target.value)}
+                              className="px-3 py-2 border border-brand-soft-gray/30 rounded-lg focus:ring-2 focus:ring-brand-dark-teal focus:border-transparent"
+                            >
                               {categories.map(cat => (
                                 <option key={cat} value={cat}>{cat}</option>
                               ))}
                             </select>
                             
+                            {/* Payment Method */}
                             <select className="px-3 py-2 border border-brand-soft-gray/30 rounded-lg focus:ring-2 focus:ring-brand-dark-teal focus:border-transparent">
                               <option value="">Payment method</option>
                               {paymentMethods.map(method => (
                                 <option key={method} value={method}>{method}</option>
                               ))}
                             </select>
-                            
-                            <input
-                              type="text"
-                              placeholder="Add notes..."
-                              className="px-3 py-2 border border-brand-soft-gray/30 rounded-lg focus:ring-2 focus:ring-brand-dark-teal focus:border-transparent"
-                            />
                           </div>
+                          
+                          {/* Notes Field */}
+                          <input
+                            type="text"
+                            placeholder="Add notes..."
+                            className="w-full px-3 py-2 border border-brand-soft-gray/30 rounded-lg focus:ring-2 focus:ring-brand-dark-teal focus:border-transparent mb-4"
+                          />
                         </div>
                       </div>
 
@@ -641,8 +872,8 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                           <div className="font-medium text-brand-text-dark">{expense.merchant}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 py-1 bg-brand-dark-teal/10 text-brand-dark-teal rounded-full text-xs font-medium">
-                            {expense.category || 'Uncategorized'}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getConfidenceColor(expense.categoryConfidence)}`}>
+                            {expense.category}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-brand-text-dark">
@@ -685,6 +916,39 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
           </div>
         )}
       </main>
+
+      {/* Business Selection Modal */}
+      {showBusinessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-6 h-6 text-yellow-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-brand-text-dark mb-2">
+                Please choose a business first
+              </h3>
+              <p className="text-brand-text-muted mb-6">
+                You need to select a business workspace before adding expenses.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowBusinessModal(false)}
+                  className="flex-1 px-4 py-2 border border-brand-soft-gray/30 text-brand-text-muted rounded-lg hover:bg-brand-soft-gray/10 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={focusWorkspaceSelector}
+                  className="flex-1 px-4 py-2 bg-brand-dark-teal text-white rounded-lg hover:bg-brand-dark-teal/90 transition-colors"
+                >
+                  Select Business
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Receipt Preview Panel */}
       {showReceiptPreview && (
@@ -742,6 +1006,20 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
         onChange={(e) => handleFileUpload(e.target.files)}
         className="hidden"
       />
+
+      {/* Click outside handlers */}
+      {workspaceDropdownOpen && (
+        <div 
+          className="fixed inset-0 z-30" 
+          onClick={() => setWorkspaceDropdownOpen(false)}
+        />
+      )}
+      {showAddDropdown && (
+        <div 
+          className="fixed inset-0 z-30" 
+          onClick={() => setShowAddDropdown(false)}
+        />
+      )}
     </div>
   );
 };
