@@ -880,7 +880,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                           ${expense.amount.toFixed(2)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-text-muted">
-                          {expense.paymentMethod || '-'}
+                          {expense.paymentMethodId ? getPaymentMethodDisplayName(expense) : '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {expense.tags?.map(tag => (
