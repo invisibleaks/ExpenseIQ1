@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase, getCurrentUser, onAuthStateChange } from './lib/supabase';
 import AccountPage from './components/AccountPage';
 import SignUpPage from './components/SignUpPage';
 import LoginPage from './components/LoginPage';
@@ -38,6 +39,41 @@ function App() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check for existing session on app load
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const { user } = await getCurrentUser();
+        setUser(user);
+      } catch (error) {
+        console.error('Error checking user:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      
+      // Redirect to account page on successful login
+      if (event === 'SIGNED_IN' && session?.user) {
+        setCurrentPage('account');
+      }
+      
+      // Redirect to home on logout
+      if (event === 'SIGNED_OUT') {
+        setCurrentPage('home');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (darkMode) {
@@ -68,8 +104,38 @@ function App() {
   const navigateToSignup = () => setCurrentPage('signup');
   const navigateToLogin = () => setCurrentPage('login');
   const navigateToForgotPassword = () => setCurrentPage('forgot-password');
-  const navigateToAccount = () => setCurrentPage('account');
-  const handleLogout = () => setCurrentPage('home');
+  const navigateToAccount = () => {
+    if (user) {
+      setCurrentPage('account');
+    } else {
+      setCurrentPage('login');
+    }
+  };
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setCurrentPage('home');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+  const handleLoginSuccess = () => {
+    setCurrentPage('account');
+  };
+
+  // Show loading spinner while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-brand-cream dark:bg-brand-dark-teal flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-brand-dark-teal dark:bg-white rounded-lg flex items-center justify-center mx-auto mb-4">
+            <Brain className="w-5 h-5 text-white dark:text-brand-dark-teal animate-pulse" />
+          </div>
+          <p className="text-brand-text-dark dark:text-brand-text-light">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show signup page if requested
   if (currentPage === 'signup') {
@@ -88,7 +154,7 @@ function App() {
         onBack={navigateToHome}
         onNavigateToSignup={navigateToSignup}
         onNavigateToForgotPassword={navigateToForgotPassword}
-        onLoginSuccess={navigateToAccount}
+        onLoginSuccess={handleLoginSuccess}
       />
     );
   }
@@ -132,24 +198,37 @@ function App() {
             <div className="hidden lg:flex items-center space-x-6">
               <a href="#features" className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors">Features</a>
               <a href="#pricing" className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors">Pricing</a>
-              <button
-                onClick={navigateToLogin}
-                className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors"
-              >
-                Log In
-              </button>
-              <button
-                onClick={navigateToSignup}
-                className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors"
-              >
-                Sign Up
-              </button>
-              <button
-                onClick={navigateToAccount}
-                className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors"
-              >
-                Dashboard
-              </button>
+              {!user ? (
+                <>
+                  <button
+                    onClick={navigateToLogin}
+                    className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors"
+                  >
+                    Log In
+                  </button>
+                  <button
+                    onClick={navigateToSignup}
+                    className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors"
+                  >
+                    Sign Up
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={navigateToAccount}
+                    className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors"
+                  >
+                    Dashboard
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige transition-colors"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
               <button
                 onClick={() => setDarkMode(!darkMode)}
                 className="p-2 rounded-lg bg-brand-soft-gray/20 dark:bg-brand-muted-teal/50 hover:bg-brand-soft-gray/30 dark:hover:bg-brand-muted-teal/70 transition-colors"
@@ -201,24 +280,37 @@ function App() {
                 >
                   Pricing
                 </a>
-                <button
-                  onClick={navigateToLogin}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
-                >
-                  Log In
-                </button>
-                <button
-                  onClick={navigateToSignup}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
-                >
-                  Sign Up
-                </button>
-                <button
-                  onClick={navigateToAccount}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
-                >
-                  Dashboard
-                </button>
+                {!user ? (
+                  <>
+                    <button
+                      onClick={navigateToLogin}
+                      className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
+                    >
+                      Log In
+                    </button>
+                    <button
+                      onClick={navigateToSignup}
+                      className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
+                    >
+                      Sign Up
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={navigateToAccount}
+                      className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
+                    >
+                      Dashboard
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brand-text-muted dark:text-brand-soft-gray hover:text-brand-dark-teal dark:hover:text-brand-warm-beige hover:bg-brand-soft-gray/10 dark:hover:bg-brand-muted-teal/30 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </>
+                )}
                 <div className="pt-2">
                   <WaitlistButton onClick={openWaitlistModal} size="md" className="w-full" />
                 </div>
