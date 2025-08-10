@@ -40,6 +40,16 @@ const ManualExpensePage: React.FC<ManualExpensePageProps> = ({
 
   // Check if form should be disabled
   const isFormDisabled = !activeWorkspaceId || !currentUser;
+  
+  // Debug: Check Supabase configuration
+  React.useEffect(() => {
+    console.log('ManualExpensePage Debug Info:', {
+      activeWorkspaceId,
+      currentUser: currentUser?.id,
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL ? 'Set' : 'Missing',
+      supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Set' : 'Missing'
+    });
+  }, [activeWorkspaceId, currentUser]);
 
   // Validation functions
   const validateMerchant = (merchant: string): string | undefined => {
@@ -129,22 +139,28 @@ const ManualExpensePage: React.FC<ManualExpensePageProps> = ({
     setIsSubmitting(true);
 
     try {
+      // Debug: Log the data being inserted
+      const insertData = {
+        workspace_id: activeWorkspaceId,
+        user_id: currentUser!.id,
+        source: 'manual',
+        status: 'unreviewed',
+        txn_date: formData.date,
+        merchant: formData.merchant.trim(),
+        amount: parseFloat(formData.amount),
+        notes: formData.notes.trim() || null,
+        currency: 'INR' // Default currency
+      };
+      
+      console.log('Attempting to insert expense:', insertData);
+      
       // Insert into Supabase
       const { error } = await supabase
         .from('expenses')
-        .insert({
-          workspace_id: activeWorkspaceId,
-          user_id: currentUser!.id,
-          source: 'manual',
-          status: 'unreviewed',
-          txn_date: formData.date,
-          merchant: formData.merchant.trim(),
-          amount: parseFloat(formData.amount),
-          notes: formData.notes.trim() || null,
-          currency: 'INR' // Default currency
-        });
+        .insert(insertData);
 
       if (error) {
+        console.error('Supabase error:', error);
         throw error;
       }
 
@@ -152,9 +168,25 @@ const ManualExpensePage: React.FC<ManualExpensePageProps> = ({
       showToast();
       clearForm();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving expense:', error);
-      setErrors({ submit: "Couldn't save. Please try again." });
+      
+      // Provide more specific error messages
+      let errorMessage = "Couldn't save. Please try again.";
+      
+      if (error?.message) {
+        if (error.message.includes('RLS')) {
+          errorMessage = "Access denied. Please check your workspace permissions.";
+        } else if (error.message.includes('foreign key')) {
+          errorMessage = "Invalid workspace or user. Please refresh and try again.";
+        } else if (error.message.includes('type')) {
+          errorMessage = "Invalid data format. Please check your entries.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setErrors({ submit: errorMessage });
     } finally {
       setIsSubmitting(false);
     }
