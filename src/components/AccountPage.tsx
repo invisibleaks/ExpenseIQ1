@@ -266,23 +266,33 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
       handleDisabledAction();
       return;
     }
+    if (!activeWorkspace) {
+      handleDisabledAction();
+      return;
+    }
     // Manual entry logic would go here
     console.log('Manual entry initiated');
   };
 
   // Expense actions
+  // NOTE: When integrated with Supabase, these operations will be automatically
+  // subject to RLS policies that ensure users can only modify expenses from
+  // workspaces they're members of, providing secure workspace isolation
   const acceptExpense = (id: string) => {
+    // RLS will ensure this expense belongs to user's active workspace
     setExpenses(prev => prev.map(e => 
       e.id === id ? { ...e, status: 'reviewed' as const } : e
     ));
   };
 
   const deleteExpense = (id: string) => {
+    // RLS will ensure this expense belongs to user's active workspace
     setExpenses(prev => prev.filter(e => e.id !== id));
   };
 
   // Update expense business
   const updateExpenseBusiness = (expenseId: string, businessId: string) => {
+    // RLS will ensure this expense belongs to user's active workspace
     const business = businesses.find(b => b.id === businessId);
     setExpenses(prev => prev.map(e => 
       e.id === expenseId 
@@ -293,6 +303,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
 
   // Update expense category
   const updateExpenseCategory = (expenseId: string, category: string) => {
+    // RLS will ensure this expense belongs to user's active workspace
     setExpenses(prev => prev.map(e => 
       e.id === expenseId 
         ? { ...e, category, categoryConfidence: 100 } // Override confidence to 100% for manual edits
@@ -302,6 +313,8 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
 
   // Bulk actions
   const handleBulkAccept = () => {
+    // RLS will automatically filter to only expenses from user's workspaces
+    // Additional filtering by activeWorkspace ensures UI consistency
     // Only operate on expenses in active workspace
     const workspaceSelectedExpenses = selectedExpenses.filter(id => {
       const expense = expenses.find(e => e.id === id);
@@ -315,6 +328,8 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
   };
 
   const handleBulkDelete = () => {
+    // RLS will automatically filter to only expenses from user's workspaces
+    // Additional filtering by activeWorkspace ensures UI consistency
     // Only operate on expenses in active workspace
     const workspaceSelectedExpenses = selectedExpenses.filter(id => {
       const expense = expenses.find(e => e.id === id);
@@ -326,6 +341,10 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
   };
 
   // Filter expenses
+  // NOTE: When integrated with Supabase, the base expense list will already be
+  // filtered by RLS to only include expenses from workspaces the user is a member of.
+  // The activeWorkspace filter here provides additional UI-level filtering for
+  // single-workspace views and ensures consistent user experience.
   const filteredExpenses = reviewedExpenses.filter(expense => {
     const matchesSearch = expense.merchant.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !selectedCategory || expense.category === selectedCategory;
