@@ -64,6 +64,7 @@ interface AccountPageProps {
 const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
   // State management
   const [currentView, setCurrentView] = useState<'dashboard' | 'inbox' | 'expenses'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'inbox' | 'expenses' | 'manual-entry'>('dashboard');
   const [selectedExpenses, setSelectedExpenses] = useState<string[]>([]);
   const [showAddDropdown, setShowAddDropdown] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -77,6 +78,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [activeWorkspace, setActiveWorkspace] = useState<string>('');
   const [workspaceDropdownOpen, setWorkspaceDropdownOpen] = useState(false);
+  const [user, setUser] = useState<{ id: string } | null>({ id: 'demo-user-id' }); // Mock user for demo
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropzoneRef = useRef<HTMLDivElement>(null);
@@ -270,8 +272,8 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
       handleDisabledAction();
       return;
     }
-    // Manual entry logic would go here
-    console.log('Manual entry initiated');
+    // Navigate to manual entry page
+    setCurrentView('manual-entry');
   };
 
   // Expense actions
@@ -355,6 +357,29 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
   const activeWorkspaceName = activeWorkspace 
     ? businesses.find(b => b.id === activeWorkspace)?.name || 'Unknown Business'
     : 'Select a business...';
+
+  // Show manual entry page
+  if (currentView === 'manual-entry') {
+    const ManualExpensePage = React.lazy(() => import('./ManualExpensePage'));
+    return (
+      <React.Suspense fallback={
+        <div className="min-h-screen bg-brand-light-beige flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 bg-brand-dark-teal rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Brain className="w-5 h-5 text-white animate-pulse" />
+            </div>
+            <p className="text-brand-text-dark">Loading...</p>
+          </div>
+        </div>
+      }>
+        <ManualExpensePage 
+          onBack={() => setCurrentView('dashboard')}
+          activeWorkspaceId={activeWorkspace}
+          currentUser={user}
+        />
+      </React.Suspense>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-brand-light-beige">
