@@ -63,7 +63,6 @@ interface AccountPageProps {
 
 const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
   // State management
-  const [currentView, setCurrentView] = useState<'dashboard' | 'inbox' | 'expenses'>('dashboard');
   const [currentView, setCurrentView] = useState<'dashboard' | 'inbox' | 'expenses' | 'manual-entry'>('dashboard');
   const [selectedExpenses, setSelectedExpenses] = useState<string[]>([]);
   const [showAddDropdown, setShowAddDropdown] = useState(false);
