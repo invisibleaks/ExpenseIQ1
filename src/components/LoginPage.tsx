@@ -140,7 +140,7 @@ const LoginPage: React.FC<LoginPageProps> = ({
       }
       
       if (!data.user) {
-        throw new Error('Login failed');
+        throw new Error('Login failed - no user data returned');
       }
       
       // Show success state briefly
@@ -157,12 +157,18 @@ const LoginPage: React.FC<LoginPageProps> = ({
       
     } catch (error) {
       console.error('Login error:', error);
-      if (error.message?.includes('Invalid login credentials')) {
+      
+      // Handle different types of authentication errors
+      if (error.message?.includes('Invalid login credentials') || error.message?.includes('invalid_credentials')) {
         setSubmitError('Invalid email or password. Please try again.');
       } else if (error.message?.includes('Email not confirmed')) {
         setSubmitError('Please check your email and click the verification link before logging in.');
+      } else if (error.message?.includes('User not found')) {
+        setSubmitError('No account found with this email address. Please sign up first.');
+      } else if (error.message?.includes('Too many requests')) {
+        setSubmitError('Too many login attempts. Please wait a moment before trying again.');
       } else {
-        setSubmitError(error.message || 'Something went wrong. Please try again.');
+        setSubmitError('Unable to sign in. Please check your credentials and try again.');
       }
     } finally {
       setIsSubmitting(false);
