@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, ArrowLeft, Brain, CheckCircle, AlertCircle, ChevronDown } from 'lucide-react';
+import { signUp } from '../lib/supabase';
 
 interface FormData {
   fullName: string;
@@ -23,6 +24,9 @@ interface FormTouched {
   password: boolean;
   confirmPassword: boolean;
   businessType: boolean;
+}
+
+interface SignUpPageProps {
   onBack: () => void;
   onNavigateToLogin: () => void;
 }
@@ -48,6 +52,8 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onBack, onNavigateToLogin }) =>
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string>('');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const businessTypes = [
     { value: '', label: 'Select your business type' },
@@ -169,18 +175,34 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onBack, onNavigateToLogin }) =>
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { data, error } = await signUp(
+        formData.email,
+        formData.password,
+        formData.fullName,
+        formData.businessType
+      );
       
-      // Handle successful signup
-      console.log('Account created successfully:', formData);
+      if (error) {
+        throw error;
+      }
       
-      // Redirect or show success message
-      alert('Account created successfully! Welcome to Expense IQ.');
+      // Show success state
+      setShowSuccess(true);
+      
+      // Auto-redirect to login after 3 seconds
+      setTimeout(() => {
+        onNavigateToLogin();
+      }, 3000);
       
     } catch (error) {
       console.error('Signup error:', error);
-      alert('Something went wrong. Please try again.');
+      if (error.message?.includes('already registered')) {
+        setSubmitError('An account with this email already exists. Please try logging in instead.');
+      } else if (error.message?.includes('Password')) {
+        setSubmitError('Password must be at least 6 characters long.');
+      } else {
+        setSubmitError(error.message || 'Something went wrong. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -238,7 +260,8 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onBack, onNavigateToLogin }) =>
 
           {/* Form Card */}
           <div className="bg-white rounded-2xl shadow-lg border border-brand-soft-gray/20 p-8">
-            <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+            {!showSuccess ? (
+              <form onSubmit={handleSubmit} className="space-y-6" noValidate>
               {/* Full Name */}
               <div>
                 <label htmlFor="fullName" className="block text-sm font-semibold text-brand-text-dark mb-2">
@@ -466,6 +489,16 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onBack, onNavigateToLogin }) =>
                 )}
               </div>
 
+              {/* Submit Error */}
+              {submitError && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg" role="alert">
+                  <div className="flex items-center space-x-2">
+                    <AlertCircle className="w-5 h-5 text-red-500" />
+                    <p className="text-sm text-red-600">{submitError}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Submit Button */}
               <button
                 type="submit"
@@ -481,6 +514,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onBack, onNavigateToLogin }) =>
                   Already have an account?{' '}
                   <button
                     onClick={onNavigateToLogin}
+                    disabled={isSubmitting}
                     className="text-brand-muted-teal hover:text-brand-dark-teal font-medium transition-colors"
                   >
                     Log in
@@ -488,6 +522,23 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onBack, onNavigateToLogin }) =>
                 </p>
               </div>
             </form>
+            ) : (
+              /* Success State */
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-brand-text-dark mb-4">
+                  Account Created Successfully!
+                </h2>
+                <p className="text-brand-text-muted mb-6">
+                  Please check your email to verify your account, then you can log in.
+                </p>
+                <p className="text-sm text-brand-text-muted">
+                  Redirecting to login page...
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </main>

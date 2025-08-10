@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, ArrowLeft, Brain, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { signIn, signInWithGoogle } from '../lib/supabase';
 
 interface LoginFormData {
   email: string;
@@ -45,6 +46,7 @@ const LoginPage: React.FC<LoginPageProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string>('');
 
   // Get next parameter from URL for redirect after login
   const getNextParam = (): string => {
@@ -87,6 +89,7 @@ const LoginPage: React.FC<LoginPageProps> = ({
     // Clear submit error when user starts typing
     if (errors.submit) {
       setErrors(prev => ({ ...prev, submit: undefined }));
+      setSubmitError('');
     }
 
     // Real-time validation for touched fields
@@ -130,17 +133,15 @@ const LoginPage: React.FC<LoginPageProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Simulate API call with potential failure
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          // Simulate random failure for demo (remove in production)
-          if (Math.random() > 0.7) {
-            reject(new Error('Invalid credentials'));
-          } else {
-            resolve(true);
-          }
-        }, 1500);
-      });
+      const { data, error } = await signIn(formData.email, formData.password);
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (!data.user) {
+        throw new Error('Login failed');
+      }
       
       // Show success state briefly
       setShowSuccess(true);
@@ -149,16 +150,20 @@ const LoginPage: React.FC<LoginPageProps> = ({
       setTimeout(() => {
         const nextUrl = getNextParam();
         console.log('Login successful, redirecting to:', nextUrl);
-        // In a real app, you would redirect here
-        // window.location.href = nextUrl;
-        alert(`Login successful! Would redirect to: ${nextUrl}`);
+        if (onLoginSuccess) {
+          onLoginSuccess();
+        }
       }, 1000);
       
     } catch (error) {
-      // Generic error message for security (don't reveal if email exists)
-      setErrors({ 
-        submit: 'Check your email or password and try again.' 
-      });
+      console.error('Login error:', error);
+      if (error.message?.includes('Invalid login credentials')) {
+        setSubmitError('Invalid email or password. Please try again.');
+      } else if (error.message?.includes('Email not confirmed')) {
+        setSubmitError('Please check your email and click the verification link before logging in.');
+      } else {
+        setSubmitError(error.message || 'Something went wrong. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -169,20 +174,17 @@ const LoginPage: React.FC<LoginPageProps> = ({
     setIsGoogleLoading(true);
     
     try {
-      // Simulate Google OAuth flow
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { data, error } = await signInWithGoogle();
       
-      setShowSuccess(true);
-      setTimeout(() => {
-        const nextUrl = getNextParam();
-        console.log('Google login successful, redirecting to:', nextUrl);
-        alert(`Google login successful! Would redirect to: ${nextUrl}`);
-      }, 1000);
+      if (error) {
+        throw error;
+      }
+      
+      // OAuth redirect will handle the rest
       
     } catch (error) {
-      setErrors({ 
-        submit: 'Google login failed. Please try again.' 
-      });
+      console.error('Google login error:', error);
+      setSubmitError('Google login failed. Please try again.');
     } finally {
       setIsGoogleLoading(false);
     }
@@ -334,11 +336,11 @@ const LoginPage: React.FC<LoginPageProps> = ({
                   </div>
 
                   {/* Submit Error */}
-                  {errors.submit && (
+                  {submitError && (
                     <div className="p-4 bg-red-50 border border-red-200 rounded-lg" role="alert">
                       <div className="flex items-center space-x-2">
                         <AlertCircle className="w-5 h-5 text-red-500" />
-                        <p className="text-sm text-red-600">{errors.submit}</p>
+                        <p className="text-sm text-red-600">{submitError}</p>
                       </div>
                     </div>
                   )}
@@ -346,7 +348,7 @@ const LoginPage: React.FC<LoginPageProps> = ({
                   {/* Primary CTA */}
                   <button
                     type="submit"
-                    disabled={isSubmitting || isGoogleLoading || Object.values(errors).some(error => error !== undefined)}
+                    disabled={isSubmitting || isGoogleLoading || !!errors.email || !!errors.password}
                     className="w-full bg-brand-dark-teal text-brand-text-light py-3 px-6 rounded-xl font-semibold hover:bg-brand-dark-teal/90 focus:ring-2 focus:ring-brand-dark-teal focus:ring-offset-2 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
                   >
                     {isSubmitting ? (

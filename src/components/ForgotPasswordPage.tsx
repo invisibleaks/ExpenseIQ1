@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Brain, CheckCircle, AlertCircle, Loader2, Mail } from 'lucide-react';
+import { resetPassword } from '../lib/supabase';
 
 interface ForgotPasswordFormData {
   email: string;
@@ -75,16 +76,26 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { data, error } = await resetPassword(formData.email);
+      
+      if (error) {
+        throw error;
+      }
       
       // Show success state
       setShowSuccess(true);
       
     } catch (error) {
-      setErrors({ 
-        submit: 'Something went wrong. Please try again.' 
-      });
+      console.error('Password reset error:', error);
+      if (error.message?.includes('not found')) {
+        setErrors({ 
+          submit: 'No account found with this email address.' 
+        });
+      } else {
+        setErrors({ 
+          submit: error.message || 'Something went wrong. Please try again.' 
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
