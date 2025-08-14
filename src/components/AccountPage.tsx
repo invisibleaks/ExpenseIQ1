@@ -112,6 +112,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isLoadingExpenses, setIsLoadingExpenses] = useState(false);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);
+  const [isRefreshingExpenses, setIsRefreshingExpenses] = useState(false); // Add this flag
 
   // Debug: Check user and workspace state
   React.useEffect(() => {
@@ -210,11 +211,11 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
 
   // Fetch expenses when workspace changes
   useEffect(() => {
-    if (activeWorkspace && user) {
+    if (activeWorkspace && user && !isRefreshingExpenses) {
       fetchExpenses();
       fetchCategoriesAndPaymentMethods();
     }
-  }, [activeWorkspace, user]);
+  }, [activeWorkspace, user]); // Remove fetchExpenses from dependencies to prevent infinite loops
 
   // Fetch expenses from database
   const fetchExpenses = async () => {
@@ -345,7 +346,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
       console.log('📊 Dashboard global categories response:', { data: globalCategoriesData, error: globalCategoriesError });
 
       if (!globalCategoriesError && globalCategoriesData && globalCategoriesData.length > 0) {
-        const transformedCategories = globalCategoriesData.map(item => ({
+        const transformedCategories = globalCategoriesData.map((item: any) => ({
           id: item.id,
           name: item.global_categories.name,
           color: item.global_categories.color
@@ -403,8 +404,9 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
 
   // Handle new expense added (called from ManualExpensePage)
   const handleExpenseAdded = () => {
-    // Refresh dashboard data when a new expense is added
-    refreshDashboard();
+    // Don't refresh dashboard immediately to avoid interfering with local state changes
+    // The new expense will be fetched on the next natural refresh cycle
+    console.log('New expense added - will be fetched on next refresh cycle');
   };
 
   // Computed values - filtered by active workspace
@@ -484,7 +486,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
 
   // Get recent expenses (last 10)
   const recentExpenses = workspaceExpenses.slice(0, 10);
-  console.log('Recent expenses (first 10):', recentExpenses);
+ // console.log('Recent expenses (first 10):', recentExpenses);
 
   // Format currency
   const formatCurrency = (amount: number, currency: string = 'INR') => {
@@ -655,16 +657,72 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
   // NOTE: When integrated with Supabase, these operations will be automatically
   // subject to RLS policies that ensure users can only modify expenses from
   // workspaces they're members of, providing secure workspace isolation
-  const acceptExpense = (id: string) => {
-    // RLS will ensure this expense belongs to user's active workspace
-    setExpenses(prev => prev.map(e => 
-      e.id === id ? { ...e, status: 'reviewed' as const } : e
-    ));
+  const acceptExpense = async (id: string) => {
+    try {
+      console.log('Accepting expense:', id);
+      
+      // Set flag to prevent fetchExpenses from running
+      setIsRefreshingExpenses(true);
+      
+      // Update the database first
+      const { error } = await supabase
+        .from('expenses')
+        .update({ status: 'reviewed' })
+        .eq('id', id)
+        .eq('workspace_id', activeWorkspace);
+
+      if (error) {
+        console.error('Error updating expense status:', error);
+        setIsRefreshingExpenses(false);
+        return;
+      }
+
+      // If database update succeeds, update local state
+      setExpenses(prev => prev.map(e => 
+        e.id === id ? { ...e, status: 'reviewed' as const } : e
+      ));
+
+      console.log('Expense status updated successfully in database');
+      
+      // Reset flag after a short delay to allow UI updates to settle
+      setTimeout(() => setIsRefreshingExpenses(false), 100);
+    } catch (error) {
+      console.error('Error accepting expense:', error);
+      setIsRefreshingExpenses(false);
+    }
   };
 
-  const deleteExpense = (id: string) => {
-    // RLS will ensure this expense belongs to user's active workspace
-    setExpenses(prev => prev.filter(e => e.id !== id));
+  const deleteExpense = async (id: string) => {
+    try {
+      console.log('Deleting expense:', id);
+      
+      // Set flag to prevent fetchExpenses from running
+      setIsRefreshingExpenses(true);
+      
+      // Delete from database first
+      const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', id)
+        .eq('workspace_id', activeWorkspace);
+
+      if (error) {
+        console.error('Error deleting expense:', error);
+        setIsRefreshingExpenses(false);
+        return;
+      }
+
+      // If database delete succeeds, update local state
+      setExpenses(prev => prev.filter(e => e.id !== id));
+      
+      console.log('Expense deleted successfully from database');
+      
+      // Reset flag after a short delay to allow UI updates to settle
+      setTimeout(() => setIsRefreshingExpenses(false), 100);
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      setIsRefreshingExpenses(false);
+    }
   };
 
   // Update expense business
@@ -701,32 +759,88 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
   };
 
   // Bulk actions
-  const handleBulkAccept = () => {
-    // RLS will automatically filter to only expenses from user's workspaces
-    // Additional filtering by activeWorkspace ensures UI consistency
-    // Only operate on expenses in active workspace
-    const workspaceSelectedExpenses = selectedExpenses.filter(id => {
-      const expense = expenses.find(e => e.id === id);
-      return expense && (!activeWorkspace || expense.workspace_id === activeWorkspace);
-    });
-    
-    setExpenses(prev => prev.map(e => 
-      workspaceSelectedExpenses.includes(e.id) ? { ...e, status: 'reviewed' as const } : e
-    ));
-    setSelectedExpenses([]);
+  const handleBulkAccept = async () => {
+    try {
+      const workspaceSelectedExpenses = selectedExpenses.filter(id => {
+        const expense = expenses.find(e => e.id === id);
+        return expense && (!activeWorkspace || expense.workspace_id === activeWorkspace);
+      });
+
+      if (workspaceSelectedExpenses.length === 0) return;
+
+      console.log('Bulk accepting expenses:', workspaceSelectedExpenses);
+
+      // Set flag to prevent fetchExpenses from running
+      setIsRefreshingExpenses(true);
+
+      // Update all selected expenses in database
+      const { error } = await supabase
+        .from('expenses')
+        .update({ status: 'reviewed' })
+        .in('id', workspaceSelectedExpenses)
+        .eq('workspace_id', activeWorkspace);
+
+      if (error) {
+        console.error('Error bulk updating expenses:', error);
+        setIsRefreshingExpenses(false);
+        return;
+      }
+
+      // Update local state
+      setExpenses(prev => prev.map(e => 
+        workspaceSelectedExpenses.includes(e.id) ? { ...e, status: 'reviewed' as const } : e
+      ));
+      
+      setSelectedExpenses([]);
+      console.log('Bulk accept completed successfully in database');
+      
+      // Reset flag after a short delay to allow UI updates to settle
+      setTimeout(() => setIsRefreshingExpenses(false), 100);
+    } catch (error) {
+      console.error('Error in bulk accept:', error);
+      setIsRefreshingExpenses(false);
+    }
   };
 
-  const handleBulkDelete = () => {
-    // RLS will automatically filter to only expenses from user's workspaces
-    // Additional filtering by activeWorkspace ensures UI consistency
-    // Only operate on expenses in active workspace
-    const workspaceSelectedExpenses = selectedExpenses.filter(id => {
-      const expense = expenses.find(e => e.id === id);
-      return expense && (!activeWorkspace || expense.workspace_id === activeWorkspace);
-    });
-    
-    setExpenses(prev => prev.filter(e => !workspaceSelectedExpenses.includes(e.id)));
-    setSelectedExpenses([]);
+  const handleBulkDelete = async () => {
+    try {
+      const workspaceSelectedExpenses = selectedExpenses.filter(id => {
+        const expense = expenses.find(e => e.id === id);
+        return expense && (!activeWorkspace || expense.workspace_id === activeWorkspace);
+      });
+
+      if (workspaceSelectedExpenses.length === 0) return;
+
+      console.log('Bulk deleting expenses:', workspaceSelectedExpenses);
+
+      // Set flag to prevent fetchExpenses from running
+      setIsRefreshingExpenses(true);
+
+      // Delete all selected expenses from database
+      const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .in('id', workspaceSelectedExpenses)
+        .eq('workspace_id', activeWorkspace);
+
+      if (error) {
+        console.error('Error bulk deleting expenses:', error);
+        setIsRefreshingExpenses(false);
+        return;
+      }
+
+      // Update local state
+      setExpenses(prev => prev.filter(e => !workspaceSelectedExpenses.includes(e.id)));
+      setSelectedExpenses([]);
+      
+      console.log('Bulk delete completed successfully in database');
+      
+      // Reset flag after a short delay to allow UI updates to settle
+      setTimeout(() => setIsRefreshingExpenses(false), 100);
+    } catch (error) {
+      console.error('Error in bulk delete:', error);
+      setIsRefreshingExpenses(false);
+    }
   };
 
   // Filter expenses
