@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, ArrowLeft, Brain, CheckCircle, AlertCircle, ChevronDown } from 'lucide-react';
-import { signUp } from '../lib/supabase';
+import { signUp, supabase } from '../lib/supabase';
 
 interface FormData {
   fullName: string;
@@ -186,13 +186,35 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onBack, onNavigateToLogin }) =>
         throw error;
       }
       
-      // Show success state
-      setShowSuccess(true);
-      
-      // Auto-redirect to login after 3 seconds
-      setTimeout(() => {
-        onNavigateToLogin();
-      }, 3000);
+      // Check if user was created successfully
+      if (data.user) {
+        // Try to sign in immediately after signup
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        if (signInError) {
+          console.log('Auto-signin failed, redirecting to login:', signInError.message);
+          // Show success state and redirect to login
+          setShowSuccess(true);
+          setTimeout(() => {
+            onNavigateToLogin();
+          }, 3000);
+        } else {
+          // Successfully signed in, redirect to account page
+          setShowSuccess(true);
+          setTimeout(() => {
+            onNavigateToLogin(); // This will actually go to account since user is authenticated
+          }, 2000);
+        }
+      } else {
+        // Show success state
+        setShowSuccess(true);
+        setTimeout(() => {
+          onNavigateToLogin();
+        }, 3000);
+      }
       
     } catch (error) {
       console.error('Signup error:', error);
@@ -532,7 +554,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onBack, onNavigateToLogin }) =>
                   Account Created Successfully!
                 </h2>
                 <p className="text-brand-text-muted mb-6">
-                  Please check your email to verify your account, then you can log in.
+                  Account created successfully! You can now log in with your credentials.
                 </p>
                 <p className="text-sm text-brand-text-muted">
                   Redirecting to login page...

@@ -29,25 +29,32 @@ import {
   ChevronRight,
   RotateCw,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
+  Building,
+  Loader2
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import BusinessModal from './BusinessModal';
 
 interface Expense {
   id: string;
   merchant: string;
   amount: number;
-  date: string;
-  category: string;
-  categoryConfidence: number;
-  paymentMethod?: string;
+  txn_date: string;
+  category_id: string;
+  category_confidence: number;
+  payment_method_id?: string;
   source: 'upload' | 'camera' | 'voice' | 'manual';
-  confidence: number;
   status: 'unreviewed' | 'reviewed' | 'flagged';
-  receiptUrl?: string;
   notes?: string;
-  tags?: string[];
-  businessId: string;
-  businessName?: string;
+  workspace_id: string;
+  user_id: string;
+  currency: string;
+  is_reimbursable: boolean;
+  created_at: string;
+  // Joined fields
+  category_name?: string;
+  payment_method_name?: string;
 }
 
 interface Business {
@@ -56,19 +63,33 @@ interface Business {
   type: string;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  color: string;
+}
+
+interface PaymentMethod {
+  id: string;
+  name: string;
+  type: string;
+}
+
 interface AccountPageProps {
   onBack: () => void;
   onLogout: () => void;
+  user?: any;
 }
 
-const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
+const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => {
   // State management
-  const [currentView, setCurrentView] = useState<'dashboard' | 'inbox' | 'expenses' | 'manual-entry'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'inbox' | 'expenses' | 'manual-entry' | 'profile'>('dashboard');
   const [selectedExpenses, setSelectedExpenses] = useState<string[]>([]);
   const [showAddDropdown, setShowAddDropdown] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [showBusinessModal, setShowBusinessModal] = useState(false);
+  const [showCreateBusinessModal, setShowCreateBusinessModal] = useState(false);
   const [showReceiptPreview, setShowReceiptPreview] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -77,80 +98,412 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [activeWorkspace, setActiveWorkspace] = useState<string>('');
   const [workspaceDropdownOpen, setWorkspaceDropdownOpen] = useState(false);
-  const [user, setUser] = useState<{ id: string } | null>({ id: 'demo-user-id' }); // Mock user for demo
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropzoneRef = useRef<HTMLDivElement>(null);
   const workspaceSelectorRef = useRef<HTMLButtonElement>(null);
 
-  // Mock businesses data
-  const businesses: Business[] = [
-    { id: 'biz1', name: 'My Consulting LLC', type: 'consulting' },
-    { id: 'biz2', name: 'Design Studio Inc', type: 'design' },
-    { id: 'biz3', name: 'E-commerce Store', type: 'retail' }
-  ];
+  // Real data from database
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [workspaces, setWorkspaces] = useState([{ id: '', name: 'Select a business...' }]);
+  const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(true);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [isLoadingExpenses, setIsLoadingExpenses] = useState(false);
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);
 
-  const workspaces = [
-    { id: '', name: 'Select a business...' },
-    ...businesses.map(b => ({ id: b.id, name: b.name }))
-  ];
+  // Debug: Check user and workspace state
+  React.useEffect(() => {
+    console.log('AccountPage Debug Info:', {
+      user: user ? {
+        id: user.id,
+        email: user.email,
+        hasUser: true
+      } : 'No user',
+      activeWorkspace,
+      businessesCount: businesses.length,
+      workspacesCount: workspaces.length,
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL ? 'Set' : 'Missing',
+      supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Set' : 'Missing'
+    });
+  }, [user, activeWorkspace, businesses, workspaces]);
 
-  // Mock data
-  const [expenses, setExpenses] = useState<Expense[]>([
-    {
-      id: '1',
-      merchant: 'Starbucks Coffee',
-      amount: 12.50,
-      date: '2025-01-15',
-      category: 'Meals',
-      categoryConfidence: 95,
-      source: 'upload',
-      confidence: 95,
-      status: 'unreviewed',
-      receiptUrl: '/api/receipts/1.jpg',
-      businessId: 'biz1',
-      businessName: 'My Consulting LLC'
-    },
-    {
-      id: '2',
-      merchant: 'Office Depot',
-      amount: 89.99,
-      date: '2025-01-14',
-      category: 'Office Supplies',
-      categoryConfidence: 88,
-      paymentMethod: 'Credit Card',
-      source: 'camera',
-      confidence: 88,
-      status: 'reviewed',
-      tags: ['tax-deductible'],
-      businessId: 'biz1',
-      businessName: 'My Consulting LLC'
-    },
-    {
-      id: '3',
-      merchant: 'Uber',
-      amount: 28.75,
-      date: '2025-01-13',
-      category: 'Travel',
-      categoryConfidence: 92,
-      paymentMethod: 'Credit Card',
-      source: 'voice',
-      confidence: 92,
-      status: 'reviewed',
-      businessId: 'biz2',
-      businessName: 'Design Studio Inc'
+  // Fetch workspaces from database - only if user is authenticated
+  useEffect(() => {
+    const fetchWorkspaces = async () => {
+      // Check if user is authenticated
+      if (!user) {
+        setIsLoadingWorkspaces(false);
+        return;
+      }
+
+      try {
+        setIsLoadingWorkspaces(true);
+        console.log('Fetching workspaces for user:', user.id);
+        
+        // Simple approach: fetch workspaces where user is the creator
+        // This should work with the existing RLS policies
+        const { data: workspacesData, error: workspacesError } = await supabase
+          .from('workspaces')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (workspacesError) {
+          console.error('Error fetching workspaces:', workspacesError);
+          // Try alternative approach if the first fails
+          console.log('Trying alternative workspace fetch...');
+          
+          // Alternative: check if user can access any workspaces
+          const { data: testData, error: testError } = await supabase
+            .from('workspaces')
+            .select('id, name')
+            .limit(1);
+            
+          if (testError) {
+            console.error('Alternative approach also failed:', testError);
+            console.log('This suggests an RLS policy issue');
+          } else {
+            console.log('Alternative approach succeeded, found:', testData);
+          }
+        } else {
+          console.log('Successfully fetched workspaces:', workspacesData);
+          
+          if (workspacesData && workspacesData.length > 0) {
+            // Transform data to match our interface
+            const transformedWorkspaces = workspacesData.map(ws => ({
+              id: ws.id,
+              name: ws.name,
+              type: ws.business_type || 'Business',
+              description: ws.description
+            }));
+
+            setBusinesses(transformedWorkspaces);
+            
+            // Update workspace dropdown
+            const workspaceOptions = [
+              { id: '', name: 'Select a business...' },
+              ...transformedWorkspaces.map(ws => ({ id: ws.id, name: ws.name }))
+            ];
+            setWorkspaces(workspaceOptions);
+
+            // Auto-select the first workspace if none is selected
+            if (!activeWorkspace && transformedWorkspaces.length > 0) {
+              console.log('Auto-selecting first workspace:', transformedWorkspaces[0].name);
+              setActiveWorkspace(transformedWorkspaces[0].id);
+            }
+          } else {
+            console.log('No workspaces found in database');
+            setBusinesses([]);
+            setWorkspaces([{ id: '', name: 'Select a business...' }]);
+          }
+        }
+      } catch (error) {
+        console.error('Unexpected error fetching workspaces:', error);
+      } finally {
+        setIsLoadingWorkspaces(false);
+      }
+    };
+
+    fetchWorkspaces();
+  }, [user]); // Remove activeWorkspace dependency to avoid infinite loop
+
+  // Fetch expenses when workspace changes
+  useEffect(() => {
+    if (activeWorkspace && user) {
+      fetchExpenses();
+      fetchCategoriesAndPaymentMethods();
     }
-  ]);
+  }, [activeWorkspace, user]);
 
-  const categories = ['Meals', 'Travel', 'Office Supplies', 'Software', 'Marketing', 'Other'];
-  const paymentMethods = ['Credit Card', 'Debit Card', 'Cash', 'Bank Transfer'];
+  // Fetch expenses from database
+  const fetchExpenses = async () => {
+    if (!activeWorkspace) return;
+
+    try {
+      setIsLoadingExpenses(true);
+      
+      // First, try to fetch expenses without joins to see if the basic query works
+      const { data: expensesData, error: expensesError } = await supabase
+        .from('expenses')
+        .select('*')
+        .eq('workspace_id', activeWorkspace)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (expensesError) {
+        console.error('Error fetching expenses:', expensesError);
+        console.error('Error details:', expensesError.message, expensesError.details, expensesError.hint);
+      } else {
+        console.log('Raw expenses data:', expensesData);
+        console.log('Number of expenses fetched:', expensesData?.length || 0);
+        
+        // Transform the data to match our interface
+        const transformedExpenses = expensesData?.map(expense => ({
+          ...expense,
+          // Since we're not joining categories/payment_methods, set default values
+          category_name: 'Uncategorized', // We'll fetch this separately if needed
+          payment_method_name: 'Not specified', // We'll fetch this separately if needed
+          // Map database fields to our interface
+          merchant: expense.merchant,
+          amount: expense.amount,
+          txn_date: expense.txn_date,
+          category_id: expense.category_id,
+          category_confidence: expense.category_confidence || 0,
+          payment_method_id: expense.payment_method_id,
+          source: expense.source,
+          status: expense.status,
+          notes: expense.notes,
+          workspace_id: expense.workspace_id,
+          user_id: expense.user_id,
+          currency: expense.currency,
+          is_reimbursable: expense.is_reimbursable,
+          created_at: expense.created_at
+        })) || [];
+
+        console.log('Transformed expenses:', transformedExpenses);
+        setExpenses(transformedExpenses);
+        
+        // If we have expenses, try to fetch category and payment method names
+        if (transformedExpenses.length > 0) {
+          await enrichExpensesWithNames(transformedExpenses);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+    } finally {
+      setIsLoadingExpenses(false);
+    }
+  };
+
+  // Function to enrich expenses with category and payment method names
+  const enrichExpensesWithNames = async (expenses: Expense[]) => {
+    try {
+      // Get unique category and payment method IDs
+      const categoryIds = [...new Set(expenses.map(e => e.category_id).filter(Boolean))];
+      const paymentMethodIds = [...new Set(expenses.map(e => e.payment_method_id).filter(Boolean))];
+      
+      // Fetch category names
+      if (categoryIds.length > 0) {
+        const { data: categoryData, error: categoryError } = await supabase
+          .from('categories')
+          .select('id, name')
+          .in('id', categoryIds);
+          
+        if (!categoryError && categoryData) {
+          const categoryMap = new Map(categoryData.map(c => [c.id, c.name]));
+          setExpenses(prev => prev.map(expense => ({
+            ...expense,
+            category_name: expense.category_id ? (categoryMap.get(expense.category_id) || 'Uncategorized') : 'Uncategorized'
+          })));
+        }
+      }
+      
+      // Fetch payment method names
+      if (paymentMethodIds.length > 0) {
+        const { data: paymentMethodData, error: paymentMethodError } = await supabase
+          .from('payment_methods')
+          .select('id, name')
+          .in('id', paymentMethodIds);
+          
+        if (!paymentMethodError && paymentMethodData) {
+          const paymentMethodMap = new Map(paymentMethodData.map(pm => [pm.id, pm.name]));
+          setExpenses(prev => prev.map(expense => ({
+            ...expense,
+            payment_method_name: expense.payment_method_id ? (paymentMethodMap.get(expense.payment_method_id) || 'Not specified') : 'Not specified'
+          })));
+        }
+      }
+    } catch (error) {
+      console.error('Error enriching expenses with names:', error);
+    }
+  };
+
+  // Fetch categories and payment methods
+  const fetchCategoriesAndPaymentMethods = async () => {
+    if (!activeWorkspace) return;
+
+    try {
+      console.log('🔍 Starting to fetch categories for dashboard workspace:', activeWorkspace);
+      
+      // Try to fetch categories from the new global categories system first
+      console.log('📡 Attempting to fetch global categories for dashboard...');
+      const { data: globalCategoriesData, error: globalCategoriesError } = await supabase
+        .from('workspace_category_mappings')
+        .select(`
+          id,
+          global_categories!inner(
+            id,
+            name,
+            color
+          )
+        `)
+        .eq('workspace_id', activeWorkspace)
+        .eq('is_active', true)
+        .order('name', { foreignTable: 'global_categories' });
+
+      console.log('📊 Dashboard global categories response:', { data: globalCategoriesData, error: globalCategoriesError });
+
+      if (!globalCategoriesError && globalCategoriesData && globalCategoriesData.length > 0) {
+        const transformedCategories = globalCategoriesData.map(item => ({
+          id: item.id,
+          name: item.global_categories.name,
+          color: item.global_categories.color
+        }));
+        
+        setCategories(transformedCategories);
+        console.log('✅ Successfully fetched global categories for dashboard:', transformedCategories.length, transformedCategories);
+      } else {
+        console.log('⚠️ Global categories failed or empty for dashboard, falling back to old method');
+        console.log('❌ Error details:', globalCategoriesError);
+        console.log('📊 Data received:', globalCategoriesData);
+        
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('categories')
+          .select('id, name, color')
+          .eq('workspace_id', activeWorkspace)
+          .order('name');
+        
+        if (fallbackError) {
+          console.error('❌ Fallback categories fetch failed:', fallbackError);
+        } else {
+          setCategories(fallbackData || []);
+          console.log('✅ Fetched fallback categories for dashboard:', fallbackData?.length || 0);
+        }
+      }
+
+      // Fetch payment methods (unchanged)
+      const { data: paymentMethodsData, error: paymentMethodsError } = await supabase
+        .from('payment_methods')
+        .select('id, name, type')
+        .eq('workspace_id', activeWorkspace)
+        .order('name');
+
+      if (paymentMethodsError) {
+        console.error('Error fetching payment methods:', paymentMethodsError);
+      } else {
+        setPaymentMethods(paymentMethodsData || []);
+      }
+    } catch (error) {
+      console.error('Error fetching categories/payment methods:', error);
+    }
+  };
+
+  // Refresh dashboard data
+  const refreshDashboard = async () => {
+    if (activeWorkspace && user) {
+      setIsLoadingDashboard(true);
+      await Promise.all([
+        fetchExpenses(),
+        fetchCategoriesAndPaymentMethods()
+      ]);
+      setIsLoadingDashboard(false);
+    }
+  };
+
+  // Handle new expense added (called from ManualExpensePage)
+  const handleExpenseAdded = () => {
+    // Refresh dashboard data when a new expense is added
+    refreshDashboard();
+  };
 
   // Computed values - filtered by active workspace
-  const workspaceExpenses = expenses.filter(e => !activeWorkspace || e.businessId === activeWorkspace);
+  const workspaceExpenses = expenses.filter(e => !activeWorkspace || e.workspace_id === activeWorkspace);
   const unreviewedExpenses = workspaceExpenses.filter(e => e.status === 'unreviewed');
   const reviewedExpenses = workspaceExpenses.filter(e => e.status === 'reviewed');
-  const thisMonthTotal = workspaceExpenses.reduce((sum, e) => sum + e.amount, 0);
-  const topCategories = ['Meals (35%)', 'Travel (28%)', 'Office (22%)'];
+
+  // Calculate monthly totals
+  const getCurrentMonthExpenses = () => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    console.log('Calculating current month expenses...');
+    console.log('Current month/year:', currentMonth, currentYear);
+    console.log('Total workspace expenses:', workspaceExpenses.length);
+    
+    const currentMonthExpenses = workspaceExpenses.filter(expense => {
+      const expenseDate = new Date(expense.txn_date);
+      const isCurrentMonth = expenseDate.getMonth() === currentMonth && 
+                           expenseDate.getFullYear() === currentYear;
+      
+      if (isCurrentMonth) {
+        console.log('Found current month expense:', expense.merchant, expense.amount, expense.txn_date);
+      }
+      
+      return isCurrentMonth;
+    });
+    
+    console.log('Current month expenses count:', currentMonthExpenses.length);
+    return currentMonthExpenses;
+  };
+
+  const currentMonthExpenses = getCurrentMonthExpenses();
+  const thisMonthTotal = currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+  // Calculate last month total for comparison
+  const getLastMonthExpenses = () => {
+    const now = new Date();
+    const lastMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+    const lastMonthYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+    
+    return workspaceExpenses.filter(expense => {
+      const expenseDate = new Date(expense.txn_date);
+      return expenseDate.getMonth() === lastMonth && 
+             expenseDate.getFullYear() === lastMonthYear;
+    });
+  };
+
+  const lastMonthExpenses = getLastMonthExpenses();
+  const lastMonthTotal = lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+  // Calculate percentage change
+  const percentageChange = lastMonthTotal > 0 
+    ? ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100 
+    : 0;
+
+  // Get top categories by spending
+  const getTopCategories = () => {
+    const categoryTotals = currentMonthExpenses.reduce((acc, expense) => {
+      const categoryName = expense.category_name || 'Uncategorized';
+      acc[categoryName] = (acc[categoryName] || 0) + expense.amount;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(categoryTotals)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([name, total]) => ({
+        name,
+        total,
+        percentage: (total / thisMonthTotal) * 100
+      }));
+  };
+
+  const topCategories = getTopCategories();
+
+  // Get recent expenses (last 10)
+  const recentExpenses = workspaceExpenses.slice(0, 10);
+  console.log('Recent expenses (first 10):', recentExpenses);
+
+  // Format currency
+  const formatCurrency = (amount: number, currency: string = 'INR') => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 2
+    }).format(amount);
+  };
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
 
   // Get confidence color for category chips
   const getConfidenceColor = (confidence: number) => {
@@ -178,7 +531,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
     if (lastWorkspace && businesses.find(b => b.id === lastWorkspace)) {
       setActiveWorkspace(lastWorkspace);
     }
-  }, []);
+  }, [businesses]);
 
   // Handle disabled action clicks
   const handleDisabledAction = () => {
@@ -189,7 +542,26 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
   const focusWorkspaceSelector = () => {
     setShowBusinessModal(false);
     workspaceSelectorRef.current?.focus();
-    setWorkspaceDropdownOpen(true);
+  };
+
+  // Handle business creation
+  const handleBusinessCreated = (newBusiness: any) => {
+    // Add the new business to the lists
+    const newWorkspace = { id: newBusiness.id, name: newBusiness.name };
+    const newBusinessItem = { 
+      id: newBusiness.id, 
+      name: newBusiness.name, 
+      type: 'business' 
+    };
+    
+    setWorkspaces(prev => [...prev.filter(w => w.id !== ''), newWorkspace]);
+    setBusinesses(prev => [...prev, newBusinessItem]);
+    
+    // Auto-select the new business
+    setActiveWorkspace(newBusiness.id);
+    
+    // Close the modal
+    setShowCreateBusinessModal(false);
   };
 
   // File upload handling
@@ -208,14 +580,16 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
         id: Date.now().toString(),
         merchant: 'New Receipt',
         amount: Math.random() * 100,
-        date: new Date().toISOString().split('T')[0],
-        category: 'Meals', // AI categorization
-        categoryConfidence: Math.floor(Math.random() * 30) + 70,
+        txn_date: new Date().toISOString().split('T')[0],
+        category_id: 'cat1', // AI categorization
+        category_confidence: Math.floor(Math.random() * 30) + 70,
         source: 'upload',
-        confidence: Math.floor(Math.random() * 20) + 80,
         status: 'unreviewed',
-        businessId: activeWorkspace,
-        businessName: businesses.find(b => b.id === activeWorkspace)?.name
+        workspace_id: activeWorkspace,
+        user_id: user?.id,
+        currency: 'INR',
+        is_reimbursable: false,
+        created_at: new Date().toISOString()
       };
       
       setExpenses(prev => [newExpense, ...prev]);
@@ -236,14 +610,16 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
         id: Date.now().toString(),
         merchant: 'Voice Entry',
         amount: Math.random() * 50,
-        date: new Date().toISOString().split('T')[0],
-        category: 'Travel', // AI categorization
-        categoryConfidence: Math.floor(Math.random() * 25) + 75,
+        txn_date: new Date().toISOString().split('T')[0],
+        category_id: 'cat2', // AI categorization
+        category_confidence: Math.floor(Math.random() * 25) + 75,
         source: 'voice',
-        confidence: 75,
         status: 'unreviewed',
-        businessId: activeWorkspace,
-        businessName: businesses.find(b => b.id === activeWorkspace)?.name
+        workspace_id: activeWorkspace,
+        user_id: user?.id,
+        currency: 'INR',
+        is_reimbursable: false,
+        created_at: new Date().toISOString()
       };
       
       setExpenses(prev => [newExpense, ...prev]);
@@ -297,17 +673,29 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
     const business = businesses.find(b => b.id === businessId);
     setExpenses(prev => prev.map(e => 
       e.id === expenseId 
-        ? { ...e, businessId, businessName: business?.name }
+        ? { ...e, workspace_id: businessId }
         : e
     ));
   };
 
   // Update expense category
-  const updateExpenseCategory = (expenseId: string, category: string) => {
+  const updateExpenseCategory = (expenseId: string, categoryId: string) => {
     // RLS will ensure this expense belongs to user's active workspace
+    const category = categories.find(c => c.id === categoryId);
     setExpenses(prev => prev.map(e => 
       e.id === expenseId 
-        ? { ...e, category, categoryConfidence: 100 } // Override confidence to 100% for manual edits
+        ? { ...e, category_id: categoryId, category_name: category?.name }
+        : e
+    ));
+  };
+
+  // Update expense payment method
+  const updateExpensePaymentMethod = (expenseId: string, paymentMethodId: string) => {
+    // RLS will ensure this expense belongs to user's active workspace
+    const paymentMethod = paymentMethods.find(pm => pm.id === paymentMethodId);
+    setExpenses(prev => prev.map(e => 
+      e.id === expenseId 
+        ? { ...e, payment_method_id: paymentMethodId, payment_method_name: paymentMethod?.name }
         : e
     ));
   };
@@ -319,7 +707,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
     // Only operate on expenses in active workspace
     const workspaceSelectedExpenses = selectedExpenses.filter(id => {
       const expense = expenses.find(e => e.id === id);
-      return expense && (!activeWorkspace || expense.businessId === activeWorkspace);
+      return expense && (!activeWorkspace || expense.workspace_id === activeWorkspace);
     });
     
     setExpenses(prev => prev.map(e => 
@@ -334,7 +722,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
     // Only operate on expenses in active workspace
     const workspaceSelectedExpenses = selectedExpenses.filter(id => {
       const expense = expenses.find(e => e.id === id);
-      return expense && (!activeWorkspace || expense.businessId === activeWorkspace);
+      return expense && (!activeWorkspace || expense.workspace_id === activeWorkspace);
     });
     
     setExpenses(prev => prev.filter(e => !workspaceSelectedExpenses.includes(e.id)));
@@ -348,7 +736,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
   // single-workspace views and ensures consistent user experience.
   const filteredExpenses = reviewedExpenses.filter(expense => {
     const matchesSearch = expense.merchant.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || expense.category === selectedCategory;
+    const matchesCategory = !selectedCategory || expense.category_name === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -356,6 +744,20 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
   const activeWorkspaceName = activeWorkspace 
     ? businesses.find(b => b.id === activeWorkspace)?.name || 'Unknown Business'
     : 'Select a business...';
+
+  // Check if user is authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-brand-light-beige flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-brand-dark-teal rounded-lg flex items-center justify-center mx-auto mb-4">
+            <Brain className="w-5 h-5 text-white animate-pulse" />
+          </div>
+          <p className="text-brand-text-dark">Please log in to access your account</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show manual entry page
   if (currentView === 'manual-entry') {
@@ -375,6 +777,29 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
           onBack={() => setCurrentView('dashboard')}
           activeWorkspaceId={activeWorkspace}
           currentUser={user}
+          onExpenseAdded={handleExpenseAdded}
+        />
+      </React.Suspense>
+    );
+  }
+
+  // Show profile page
+  if (currentView === 'profile') {
+    const ProfilePage = React.lazy(() => import('./ProfilePage'));
+    return (
+      <React.Suspense fallback={
+        <div className="min-h-screen bg-brand-light-beige flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 bg-brand-dark-teal rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Brain className="w-5 h-5 text-white animate-pulse" />
+            </div>
+            <p className="text-brand-text-dark">Loading...</p>
+          </div>
+        </div>
+      }>
+        <ProfilePage 
+          onBack={() => setCurrentView('dashboard')}
+          user={user}
         />
       </React.Suspense>
     );
@@ -401,16 +826,21 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                 <button 
                   ref={workspaceSelectorRef}
                   onClick={() => setWorkspaceDropdownOpen(!workspaceDropdownOpen)}
+                  disabled={isLoadingWorkspaces}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors ${
-                    activeWorkspace 
+                    isLoadingWorkspaces
+                      ? 'border-brand-soft-gray/30 bg-brand-soft-gray/10 cursor-not-allowed'
+                      : activeWorkspace 
                       ? 'border-brand-muted-teal/50 hover:border-brand-muted-teal' 
                       : 'border-yellow-300 bg-yellow-50 hover:border-yellow-400'
                   }`}
                 >
                   <span className={`text-sm font-medium ${
-                    activeWorkspace ? 'text-brand-text-dark' : 'text-yellow-700'
+                    isLoadingWorkspaces 
+                      ? 'text-brand-soft-gray' 
+                      : activeWorkspace ? 'text-brand-text-dark' : 'text-yellow-700'
                   }`}>
-                    {activeWorkspaceName}
+                    {isLoadingWorkspaces ? 'Loading...' : activeWorkspaceName}
                   </span>
                   <ChevronDown className="w-4 h-4 text-brand-soft-gray" />
                 </button>
@@ -433,6 +863,21 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                         {workspace.name}
                       </button>
                     ))}
+                    
+                    {/* Divider */}
+                    <hr className="my-2 border-brand-soft-gray/20" />
+                    
+                    {/* Create New Business Button */}
+                    <button
+                      onClick={() => {
+                        setWorkspaceDropdownOpen(false);
+                        setShowCreateBusinessModal(true);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-brand-dark-teal hover:bg-brand-dark-teal/10 transition-colors flex items-center space-x-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Create New Business</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -461,7 +906,10 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
 
               {showUserMenu && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-brand-soft-gray/20 py-2 z-50">
-                  <button className="w-full px-4 py-2 text-left text-sm text-brand-text-dark hover:bg-brand-soft-gray/10 flex items-center space-x-2">
+                  <button 
+                    onClick={() => setCurrentView('profile')}
+                    className="w-full px-4 py-2 text-left text-sm text-brand-text-dark hover:bg-brand-soft-gray/10 flex items-center space-x-2"
+                  >
                     <User className="w-4 h-4" />
                     <span>Profile</span>
                   </button>
@@ -497,7 +945,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
               className={`px-6 py-3 rounded-xl font-semibold focus:ring-2 focus:ring-offset-2 transition-all shadow-lg flex items-center space-x-2 ${
                 isActionsDisabled
                   ? 'bg-brand-soft-gray text-brand-text-muted cursor-not-allowed'
-                  : 'bg-brand-dark-teal text-white hover:bg-brand-dark-teal/90 focus:ring-brand-dark-teal transform hover:scale-105 hover:shadow-xl'
+                  : 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-600 transform hover:scale-105 hover:shadow-xl'
               }`}
             >
               <Plus className="w-5 h-5" />
@@ -617,79 +1065,187 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
           >
             All Expenses
           </button>
+          <button
+            onClick={() => setCurrentView('profile')}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              currentView === 'profile'
+                ? 'bg-white text-brand-dark-teal shadow-sm'
+                : 'text-brand-text-muted hover:text-brand-dark-teal'
+            }`}
+          >
+            Profile
+          </button>
         </div>
 
         {/* Dashboard View */}
         {currentView === 'dashboard' && (
           <div className="space-y-8">
-            {/* Insights Snapshot */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-brand-soft-gray/20">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-brand-dark-teal/10 rounded-lg flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-brand-dark-teal" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-brand-text-dark">This Month</h3>
-                    <p className="text-2xl font-bold text-brand-dark-teal">${thisMonthTotal.toFixed(2)}</p>
-                  </div>
+            {/* Business Selection or Creation Prompt */}
+            {!activeWorkspace ? (
+              <div className="bg-white rounded-2xl shadow-sm border border-brand-soft-gray/20 p-8 text-center">
+                <div className="w-20 h-20 bg-brand-dark-teal/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Building className="w-10 h-10 text-brand-dark-teal" />
                 </div>
-                <p className="text-sm text-brand-text-muted">+12% from last month</p>
-              </div>
-
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-brand-soft-gray/20">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-brand-dark-teal/10 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-brand-dark-teal" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-brand-text-dark">Top Categories</h3>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  {topCategories.map((category, index) => (
-                    <p key={index} className="text-sm text-brand-text-muted">{category}</p>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-brand-soft-gray/20">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-yellow-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-brand-text-dark">Needs Attention</h3>
-                    <p className="text-2xl font-bold text-yellow-600">{unreviewedExpenses.length}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-brand-text-muted">Items awaiting review</p>
-              </div>
-            </div>
-
-            {/* Recent Activity */}
-            <div className="bg-white rounded-2xl shadow-sm border border-brand-soft-gray/20 p-6">
-              <h3 className="text-lg font-semibold text-brand-text-dark mb-4">Recent Activity</h3>
-              <div className="space-y-3">
-                {expenses.slice(0, 5).map((expense) => (
-                  <div key={expense.id} className="flex items-center justify-between py-2">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-brand-dark-teal/10 rounded-lg flex items-center justify-center">
-                        <FileText className="w-4 h-4 text-brand-dark-teal" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-brand-text-dark">{expense.merchant}</p>
-                        <p className="text-sm text-brand-text-muted">{expense.date}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-brand-text-dark">${expense.amount.toFixed(2)}</p>
-                      <p className="text-sm text-brand-text-muted capitalize">{expense.status}</p>
+                <h2 className="text-2xl font-bold text-brand-text-dark mb-4">
+                  Welcome to Expense IQ!
+                </h2>
+                <p className="text-lg text-brand-text-muted mb-6 max-w-2xl mx-auto">
+                  To get started, you need to create your first business workspace. This will be where you track all your expenses and manage your financial data.
+                </p>
+                
+                {businesses.length > 1 ? (
+                  /* User has businesses but none selected */
+                  <div className="space-y-4">
+                    <p className="text-brand-text-muted">Or select an existing business:</p>
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => setWorkspaceDropdownOpen(true)}
+                        className="px-6 py-3 border border-brand-muted-teal text-brand-muted-teal rounded-lg hover:border-brand-dark-teal hover:text-brand-dark-teal transition-colors"
+                      >
+                        Select Business
+                      </button>
                     </div>
                   </div>
-                ))}
+                ) : (
+                  /* No businesses exist yet */
+                  <div className="space-y-4">
+                    <button
+                      onClick={() => setShowCreateBusinessModal(true)}
+                      className="px-8 py-4 bg-brand-dark-teal text-white rounded-xl font-semibold hover:bg-brand-dark-teal/90 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    >
+                      <Building className="w-5 h-5 inline mr-2" />
+                      Create Your First Business
+                    </button>
+                    <p className="text-sm text-brand-text-muted">
+                      It only takes a minute to set up
+                    </p>
+                  </div>
+                )}
               </div>
-            </div>
+            ) : (
+              /* Business is selected - show normal dashboard */
+              <>
+                                 {isLoadingDashboard || isLoadingExpenses ? (
+                   <div className="flex justify-center items-center py-16">
+                     <Loader2 className="w-12 h-12 text-brand-dark-teal animate-spin" />
+                   </div>
+                 ) : (
+                  <>
+                                    {/* Dashboard Header with Refresh */}
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-brand-text-dark">Dashboard Overview</h2>
+                  <button
+                    onClick={refreshDashboard}
+                    disabled={isLoadingDashboard}
+                    className="flex items-center space-x-2 px-4 py-2 bg-brand-dark-teal text-white rounded-lg hover:bg-brand-dark-teal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <RotateCw className={`w-4 h-4 ${isLoadingDashboard ? 'animate-spin' : ''}`} />
+                    <span>Refresh</span>
+                  </button>
+                </div>
+
+                {/* Insights Snapshot */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-brand-soft-gray/20">
+                         <div className="flex items-center space-x-3 mb-4">
+                           <div className="w-10 h-10 bg-brand-dark-teal/10 rounded-lg flex items-center justify-center">
+                             <DollarSign className="w-5 h-5 text-brand-dark-teal" />
+                           </div>
+                           <div>
+                             <h3 className="font-semibold text-brand-text-dark">This Month</h3>
+                             <p className="text-2xl font-bold text-brand-dark-teal">
+                               {thisMonthTotal > 0 ? formatCurrency(thisMonthTotal) : '₹0.00'}
+                             </p>
+                           </div>
+                         </div>
+                         {thisMonthTotal > 0 ? (
+                           <p className={`text-sm ${percentageChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                             {percentageChange >= 0 ? '+' : ''}{percentageChange.toFixed(1)}% from last month
+                           </p>
+                         ) : (
+                           <p className="text-sm text-brand-text-muted">No expenses this month</p>
+                         )}
+                       </div>
+
+                                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-brand-soft-gray/20">
+                         <div className="flex items-center space-x-3 mb-4">
+                           <div className="w-10 h-10 bg-brand-dark-teal/10 rounded-lg flex items-center justify-center">
+                             <TrendingUp className="w-5 h-5 text-brand-dark-teal" />
+                           </div>
+                           <div>
+                             <h3 className="font-semibold text-brand-text-dark">Top Categories</h3>
+                           </div>
+                         </div>
+                         {topCategories.length === 0 ? (
+                           <div className="text-center py-4">
+                             <p className="text-sm text-brand-text-muted">No expenses this month</p>
+                           </div>
+                         ) : (
+                           <div className="space-y-1">
+                             {topCategories.map((category, index) => (
+                               <p key={index} className="text-sm text-brand-text-muted">
+                                 {category.name} ({category.percentage.toFixed(0)}%)
+                               </p>
+                             ))}
+                           </div>
+                         )}
+                       </div>
+
+                                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-brand-soft-gray/20">
+                         <div className="flex items-center space-x-3 mb-4">
+                           <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                             <Clock className="w-5 h-5 text-yellow-600" />
+                           </div>
+                           <div>
+                             <h3 className="font-semibold text-brand-text-dark">Needs Attention</h3>
+                             <p className="text-2xl font-bold text-yellow-600">{unreviewedExpenses.length}</p>
+                           </div>
+                         </div>
+                         {unreviewedExpenses.length === 0 ? (
+                           <p className="text-sm text-green-600">All caught up!</p>
+                         ) : (
+                           <p className="text-sm text-brand-text-muted">Items awaiting review</p>
+                         )}
+                       </div>
+                    </div>
+
+                                         {/* Recent Activity */}
+                     <div className="bg-white rounded-2xl shadow-sm border border-brand-soft-gray/20 p-6">
+                       <h3 className="text-lg font-semibold text-brand-text-dark mb-4">Recent Activity</h3>
+                       {recentExpenses.length === 0 ? (
+                         <div className="text-center py-8">
+                           <div className="w-16 h-16 bg-brand-soft-gray/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                             <FileText className="w-8 h-8 text-brand-soft-gray" />
+                           </div>
+                           <p className="text-brand-text-muted mb-2">No expenses yet</p>
+                           <p className="text-sm text-brand-text-muted">Add your first expense to see it here</p>
+                         </div>
+                       ) : (
+                         <div className="space-y-3">
+                           {recentExpenses.map((expense) => (
+                             <div key={expense.id} className="flex items-center justify-between py-2">
+                               <div className="flex items-center space-x-3">
+                                 <div className="w-8 h-8 bg-brand-dark-teal/10 rounded-lg flex items-center justify-center">
+                                   <FileText className="w-4 h-4 text-brand-dark-teal" />
+                                 </div>
+                                 <div>
+                                   <p className="font-medium text-brand-text-dark">{expense.merchant}</p>
+                                   <p className="text-sm text-brand-text-muted">{formatDate(expense.txn_date)}</p>
+                                 </div>
+                               </div>
+                               <div className="text-right">
+                                 <p className="font-semibold text-brand-text-dark">{formatCurrency(expense.amount, expense.currency)}</p>
+                                 <p className="text-sm text-brand-text-muted capitalize">{expense.status}</p>
+                               </div>
+                             </div>
+                           ))}
+                         </div>
+                       )}
+                     </div>
+                  </>
+                )}
+              </>
+            )}
           </div>
         )}
 
@@ -751,28 +1307,22 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                           <div className="flex items-center space-x-3 mb-2">
                             <h4 className="font-semibold text-brand-text-dark">{expense.merchant}</h4>
                             <span className="text-2xl font-bold text-brand-dark-teal">${expense.amount.toFixed(2)}</span>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              expense.confidence >= 90 
-                                ? 'bg-green-100 text-green-700'
-                                : expense.confidence >= 70
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-red-100 text-red-700'
-                            }`}>
-                              {expense.confidence}% confident
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getConfidenceColor(expense.category_confidence)}`}>
+                              {expense.category_confidence}% confident
                             </span>
                           </div>
                           
                           <div className="flex items-center space-x-4 text-sm text-brand-text-muted mb-4">
-                            <span>{expense.date}</span>
+                            <span>{formatDate(expense.txn_date)}</span>
                             <span className="capitalize">{expense.source}</span>
-                            <span className="text-brand-dark-teal">{expense.businessName}</span>
+                            <span className="text-brand-dark-teal">{expense.category_name}</span>
                           </div>
 
                           {/* AI Category Chip */}
                           <div className="mb-4">
-                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getConfidenceColor(expense.categoryConfidence)}`}>
+                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getConfidenceColor(expense.category_confidence)}`}>
                               <Brain className="w-3 h-3 mr-1" />
-                              {expense.category} ({expense.categoryConfidence}%)
+                              {expense.category_name} ({expense.category_confidence}%)
                             </div>
                           </div>
 
@@ -780,7 +1330,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             {/* Business Selector */}
                             <select 
-                              value={expense.businessId}
+                              value={expense.workspace_id}
                               onChange={(e) => updateExpenseBusiness(expense.id, e.target.value)}
                               className="px-3 py-2 border border-brand-soft-gray/30 rounded-lg focus:ring-2 focus:ring-brand-dark-teal focus:border-transparent"
                             >
@@ -791,20 +1341,24 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                             
                             {/* Category Selector */}
                             <select 
-                              value={expense.category}
+                              value={expense.category_id}
                               onChange={(e) => updateExpenseCategory(expense.id, e.target.value)}
                               className="px-3 py-2 border border-brand-soft-gray/30 rounded-lg focus:ring-2 focus:ring-brand-dark-teal focus:border-transparent"
                             >
                               {categories.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
+                                <option key={cat.id} value={cat.id}>{cat.name}</option>
                               ))}
                             </select>
                             
                             {/* Payment Method */}
-                            <select className="px-3 py-2 border border-brand-soft-gray/30 rounded-lg focus:ring-2 focus:ring-brand-dark-teal focus:border-transparent">
+                            <select 
+                              value={expense.payment_method_id}
+                              onChange={(e) => updateExpensePaymentMethod(expense.id, e.target.value)}
+                              className="px-3 py-2 border border-brand-soft-gray/30 rounded-lg focus:ring-2 focus:ring-brand-dark-teal focus:border-transparent"
+                            >
                               <option value="">Payment method</option>
                               {paymentMethods.map(method => (
-                                <option key={method} value={method}>{method}</option>
+                                <option key={method.id} value={method.id}>{method.name}</option>
                               ))}
                             </select>
                           </div>
@@ -813,6 +1367,12 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                           <input
                             type="text"
                             placeholder="Add notes..."
+                            value={expense.notes || ''}
+                            onChange={(e) => {
+                              setExpenses(prev => prev.map(e => 
+                                e.id === expense.id ? { ...e, notes: e.notes || e.notes === '' ? e.notes : e.notes } : e
+                              ));
+                            }}
                             className="w-full px-3 py-2 border border-brand-soft-gray/30 rounded-lg focus:ring-2 focus:ring-brand-dark-teal focus:border-transparent mb-4"
                           />
                         </div>
@@ -820,14 +1380,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
 
                       {/* Actions */}
                       <div className="flex items-center space-x-2">
-                        {expense.receiptUrl && (
-                          <button
-                            onClick={() => setShowReceiptPreview(expense.id)}
-                            className="p-2 text-brand-muted-teal hover:text-brand-dark-teal hover:bg-brand-soft-gray/10 rounded-lg transition-colors"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        )}
+                        {/* Receipt preview is handled by a separate modal */}
                         
                         <button
                           onClick={() => acceptExpense(expense.id)}
@@ -879,7 +1432,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                 >
                   <option value="">All categories</option>
                   {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
                   ))}
                 </select>
                 
@@ -909,39 +1462,33 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
                     {filteredExpenses.map((expense) => (
                       <tr key={expense.id} className="hover:bg-brand-soft-gray/5">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-text-dark">
-                          {expense.date}
+                          {formatDate(expense.txn_date)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="font-medium text-brand-text-dark">{expense.merchant}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getConfidenceColor(expense.categoryConfidence)}`}>
-                            {expense.category}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getConfidenceColor(expense.category_confidence)}`}>
+                            {expense.category_name}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-brand-text-dark">
                           ${expense.amount.toFixed(2)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-text-muted">
-                          {expense.paymentMethodId ? getPaymentMethodDisplayName(expense) : '-'}
+                          {expense.payment_method_name || '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {expense.tags?.map(tag => (
+                          {/* Tags are not directly stored in the expense table, but could be added */}
+                          {/* {expense.tags?.map(tag => (
                             <span key={tag} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-brand-warm-beige/30 text-brand-dark-teal mr-1">
                               {tag}
                             </span>
-                          ))}
+                          ))} */}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-text-muted">
                           <div className="flex items-center space-x-2">
-                            {expense.receiptUrl && (
-                              <button
-                                onClick={() => setShowReceiptPreview(expense.id)}
-                                className="text-brand-muted-teal hover:text-brand-dark-teal"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                            )}
+                            {/* Receipt preview is handled by a separate modal */}
                             <button className="text-brand-muted-teal hover:text-brand-dark-teal">
                               <Edit3 className="w-4 h-4" />
                             </button>
@@ -1063,6 +1610,14 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout }) => {
           onClick={() => setShowAddDropdown(false)}
         />
       )}
+
+      {/* Business Creation Modal */}
+      <BusinessModal
+        isOpen={showCreateBusinessModal}
+        onClose={() => setShowCreateBusinessModal(false)}
+        onBusinessCreated={handleBusinessCreated}
+        user={user}
+      />
     </div>
   );
 };

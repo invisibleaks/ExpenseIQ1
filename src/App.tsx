@@ -39,7 +39,7 @@ function App() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check for existing session on app load
@@ -171,10 +171,17 @@ function App() {
 
   // Show account page if requested
   if (currentPage === 'account') {
+    // Redirect to login if user is not authenticated
+    if (!user) {
+      setCurrentPage('login');
+      return null;
+    }
+    
     return (
       <AccountPage 
         onBack={navigateToHome}
         onLogout={handleLogout}
+        user={user}
       />
     );
   }

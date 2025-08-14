@@ -18,7 +18,9 @@ export const signUp = async (email: string, password: string, fullName: string, 
       data: {
         full_name: fullName,
         business_type: businessType,
-      }
+      },
+      // Disable email confirmation requirement
+      emailRedirectTo: undefined
     }
   })
   
@@ -65,4 +67,32 @@ export const getCurrentUser = async () => {
 
 export const onAuthStateChange = (callback: (event: string, session: any) => void) => {
   return supabase.auth.onAuthStateChange(callback)
+}
+
+// User profile functions
+export const getUserProfile = async () => {
+  const { data, error } = await supabase.rpc('get_my_profile')
+  return { data, error }
+}
+
+export const updateUserProfile = async (updates: {
+  full_name?: string
+  business_type?: string
+  avatar_url?: string
+  phone?: string
+  company_name?: string
+}) => {
+  const { data, error } = await supabase.rpc('update_my_profile', updates)
+  return { data, error }
+}
+
+// Get user metadata from auth (fallback for existing users)
+export const getUserMetadata = async () => {
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error) return { data: null, error }
+  
+  return { 
+    data: user?.user_metadata || null, 
+    error: null 
+  }
 }
