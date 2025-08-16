@@ -1,4 +1,4 @@
-// AI Categorization Service using OpenAI
+// AI Categorization Service using Supabase Edge Functions
 // This service automatically categorizes expenses based on merchant name and amount
 
 export interface AICategorizationResult {
@@ -50,15 +50,15 @@ export const PAYMENT_METHOD_PATTERNS = {
 };
 
 class AICategorizationService {
-  private apiKey: string | null = null;
+  private supabaseUrl: string | null = null;
   private isConfigured: boolean = false;
 
   constructor() {
-    this.apiKey = import.meta.env.VITE_OPENAI_API_KEY || null;
-    this.isConfigured = !!this.apiKey;
+    this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL || null;
+    this.isConfigured = !!this.supabaseUrl;
     
     if (!this.isConfigured) {
-      console.warn('OpenAI API key not found. AI categorization will be disabled.');
+      console.warn('Supabase URL not found. AI categorization will be disabled.');
     }
   }
 
@@ -70,18 +70,47 @@ class AICategorizationService {
   }
 
   /**
-   * Categorize an expense using OpenAI
+   * Categorize an expense using Supabase Edge Function
    */
   async categorizeExpense(expense: ExpenseContext): Promise<AICategorizationResult> {
     if (!this.isAvailable()) {
-      throw new Error('AI categorization is not configured. Please add VITE_OPENAI_API_KEY to your environment variables.');
+      throw new Error('AI categorization is not configured. Please check your Supabase configuration.');
     }
 
     try {
-      const prompt = this.buildPrompt(expense);
-      const response = await this.callOpenAI(prompt);
+      // Get the current session for authentication
+      const { supabase } = await import('./supabase');
+      const { data: { session } } = await supabase.auth.getSession();
       
-      return this.parseAIResponse(response);
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Add authorization header if user is authenticated
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      const response = await fetch(`${this.supabaseUrl}/functions/v1/ai-categorization`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ expense })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Edge function error response:', errorText);
+        throw new Error(`Edge function error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      // Validate the response
+      if (!result.category || !result.confidence || !result.reasoning) {
+        throw new Error('Invalid response from AI categorization service');
+      }
+
+      return result;
     } catch (error) {
       console.error('AI categorization failed:', error);
       // Fallback to rule-based categorization
@@ -90,110 +119,123 @@ class AICategorizationService {
   }
 
   /**
-   * Build the prompt for OpenAI
+   * Get suggested categories for a merchant (for autocomplete)
+   * This now uses the Edge Function for better AI-powered suggestions
    */
-  private buildPrompt(expense: ExpenseContext): string {
-    const categories = DEFAULT_CATEGORIES.join(', ');
-    
-    return `You are an expense categorization expert. Analyze the following expense and categorize it into one of these categories: ${categories}
-
-Expense Details:
-- Merchant: ${expense.merchant}
-- Amount: ${expense.currency} ${expense.amount}
-- Description: ${expense.description || 'Not provided'}
-- Date: ${expense.date || 'Not specified'}
-- Notes: ${expense.notes || 'None'}
-
-Please respond in this exact JSON format:
-{
-  "category": "exact_category_name_from_list",
-  "confidence": 0.95,
-  "reasoning": "Brief explanation of why this category was chosen",
-  "suggestedPaymentMethod": "Credit Card"
-}
-
-Rules:
-1. Choose the most specific and appropriate category from the list
-2. Confidence should be between 0.7 and 1.0
-3. Reasoning should be clear and concise
-4. Suggested payment method should be one of: Credit Card, Debit Card, Cash, Bank Transfer, Digital Wallet
-5. If the expense doesn't clearly fit any category, use "Other" with lower confidence
-6. Use the description field as the primary source for categorization when available
-
-Example response:
-{
-  "category": "Transportation",
-  "confidence": 0.95,
-  "reasoning": "Ride-sharing service based on merchant 'Uber' and description 'Ride from airport to downtown'",
-  "suggestedPaymentMethod": "Credit Card"
-}`;
-  }
-
-  /**
-   * Call OpenAI API
-   */
-  private async callOpenAI(prompt: string): Promise<string> {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expense categorization expert. Always respond with valid JSON.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.1,
-        max_tokens: 200
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+  async getCategorySuggestions(merchant: string): Promise<string[]> {
+    if (!this.isAvailable() || !merchant.trim()) {
+      return this.getFallbackSuggestions(merchant);
     }
 
-    const data = await response.json();
-    return data.choices[0]?.message?.content || '';
+    try {
+      // Get the current session for authentication
+      const { supabase } = await import('./supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Add authorization header if user is authenticated
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      // Create a minimal expense context for suggestions
+      const expenseContext: ExpenseContext = {
+        merchant: merchant.trim(),
+        amount: 0,
+        currency: 'USD',
+        description: 'Category suggestion request'
+      };
+
+      const response = await fetch(`${this.supabaseUrl}/functions/v1/ai-categorization`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ 
+          expense: expenseContext,
+          requestType: 'suggestions' // Add a flag to indicate this is for suggestions
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.suggestions && Array.isArray(result.suggestions)) {
+          return result.suggestions;
+        }
+      }
+
+      // Fallback to rule-based suggestions if Edge Function doesn't support suggestions yet
+      return this.getFallbackSuggestions(merchant);
+    } catch (error) {
+      console.error('Failed to get AI category suggestions:', error);
+      return this.getFallbackSuggestions(merchant);
+    }
   }
 
   /**
-   * Parse the AI response
+   * Get multiple expense categorizations in batch (useful for bulk imports)
    */
-  private parseAIResponse(response: string): AICategorizationResult {
+  async categorizeExpensesBatch(expenses: ExpenseContext[]): Promise<AICategorizationResult[]> {
+    if (!this.isAvailable()) {
+      throw new Error('AI categorization is not configured. Please check your Supabase configuration.');
+    }
+
+    if (expenses.length === 0) {
+      return [];
+    }
+
     try {
-      // Clean the response (remove markdown formatting if present)
-      const cleanResponse = response.replace(/```json\s*|\s*```/g, '').trim();
-      const parsed = JSON.parse(cleanResponse);
+      // Get the current session for authentication
+      const { supabase } = await import('./supabase');
+      const { data: { session } } = await supabase.auth.getSession();
       
-      // Validate the response
-      if (!parsed.category || !parsed.confidence || !parsed.reasoning) {
-        throw new Error('Invalid AI response format');
-      }
-
-      // Ensure category is from our allowed list
-      if (!DEFAULT_CATEGORIES.includes(parsed.category)) {
-        parsed.category = 'Other';
-        parsed.confidence = Math.max(parsed.confidence * 0.8, 0.7);
-        parsed.reasoning = `AI suggested "${parsed.category}" but it's not in our category list, so using "Other"`;
-      }
-
-      return {
-        category: parsed.category,
-        confidence: Math.max(0.7, Math.min(1.0, parsed.confidence)),
-        reasoning: parsed.reasoning,
-        suggestedPaymentMethod: parsed.suggestedPaymentMethod
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
       };
+
+      // Add authorization header if user is authenticated
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      const response = await fetch(`${this.supabaseUrl}/functions/v1/ai-categorization`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ 
+          expenses,
+          requestType: 'batch'
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Batch categorization error response:', errorText);
+        throw new Error(`Batch categorization failed: ${response.status} ${response.statusText}`);
+      }
+
+      const results = await response.json();
+      
+      // Validate the batch response
+      if (!Array.isArray(results)) {
+        throw new Error('Invalid batch response from AI categorization service');
+      }
+
+      return results.map(result => {
+        if (!result.category || !result.confidence || !result.reasoning) {
+          // Fallback for any invalid results in the batch
+          return this.fallbackCategorization({
+            merchant: result.merchant || 'Unknown',
+            amount: result.amount || 0,
+            currency: result.currency || 'USD'
+          });
+        }
+        return result;
+      });
     } catch (error) {
-      console.error('Failed to parse AI response:', error);
-      throw new Error('AI response parsing failed');
+      console.error('Batch AI categorization failed:', error);
+      // Fallback to individual categorization for each expense
+      return Promise.all(expenses.map(expense => this.fallbackCategorization(expense)));
     }
   }
 
@@ -257,26 +299,6 @@ Example response:
   }
 
   /**
-   * Get suggested categories for a merchant (for autocomplete)
-   */
-  async getCategorySuggestions(merchant: string): Promise<string[]> {
-    if (!this.isAvailable()) {
-      return this.getFallbackSuggestions(merchant);
-    }
-
-    try {
-      const prompt = `Given this merchant name: "${merchant}", suggest the top 3 most likely expense categories from this list: ${DEFAULT_CATEGORIES.join(', ')}. Respond with just the category names separated by commas.`;
-      
-      const response = await this.callOpenAI(prompt);
-      const suggestions = response.split(',').map(s => s.trim()).filter(s => DEFAULT_CATEGORIES.includes(s));
-      
-      return suggestions.length > 0 ? suggestions : this.getFallbackSuggestions(merchant);
-    } catch (error) {
-      return this.getFallbackSuggestions(merchant);
-    }
-  }
-
-  /**
    * Fallback category suggestions
    */
   private getFallbackSuggestions(merchant: string): string[] {
@@ -293,6 +315,19 @@ Example response:
     }
     
     return suggestions.slice(0, 3);
+  }
+
+  /**
+   * Get service status and configuration info
+   */
+  getServiceInfo() {
+    return {
+      isAvailable: this.isAvailable(),
+      supabaseUrl: this.supabaseUrl,
+      edgeFunctionUrl: this.supabaseUrl ? `${this.supabaseUrl}/functions/v1/ai-categorization` : null,
+      categories: DEFAULT_CATEGORIES,
+      paymentMethods: Object.keys(PAYMENT_METHOD_PATTERNS)
+    };
   }
 }
 
