@@ -145,8 +145,9 @@ const ManualExpensePage: React.FC<ManualExpensePageProps> = ({
       console.log('📊 Global categories response:', { data: globalCategoriesData, error: globalCategoriesError });
 
       if (!globalCategoriesError && globalCategoriesData && globalCategoriesData.length > 0) {
-        const transformedCategories = globalCategoriesData.map(item => ({
-          id: item.id,
+        // FIXED: Use the global_categories.id instead of the mapping id
+        const transformedCategories = globalCategoriesData.map((item: any) => ({
+          id: item.global_categories.id, // Use the actual category ID, not the mapping ID
           name: item.global_categories.name,
           description: item.global_categories.description,
           color: item.global_categories.color,
@@ -160,17 +161,20 @@ const ManualExpensePage: React.FC<ManualExpensePageProps> = ({
         console.log('❌ Error details:', globalCategoriesError);
         console.log('📊 Data received:', globalCategoriesData);
         
+        // FIXED: Use global_categories table directly instead of old categories table
+        console.log('📡 Attempting to fetch global categories directly...');
         const { data: fallbackData, error: fallbackError } = await supabase
-          .from('categories')
+          .from('global_categories')
           .select('id, name, description, color, icon')
-          .eq('workspace_id', activeWorkspaceId)
           .order('name');
         
         if (fallbackError) {
-          console.error('❌ Fallback categories fetch failed:', fallbackError);
+          console.error('❌ Direct global categories fetch failed:', fallbackError);
+          // Set empty categories array as last resort
+          setCategories([]);
         } else {
           setCategories(fallbackData || []);
-          console.log('✅ Fetched fallback categories:', fallbackData?.length || 0);
+          console.log('✅ Fetched global categories directly:', fallbackData?.length || 0);
         }
       }
 
@@ -209,7 +213,9 @@ const ManualExpensePage: React.FC<ManualExpensePageProps> = ({
         notes: formData.notes
       };
 
+      console.log('🚀 Starting AI categorization for expense:', expense);
       const result = await aiCategorizationService.categorizeExpense(expense);
+      console.log('🤖 AI categorization result:', result);
       setAiResult(result);
       
       // Auto-apply AI suggestions
@@ -233,42 +239,75 @@ const ManualExpensePage: React.FC<ManualExpensePageProps> = ({
     console.log('📊 Available categories:', categories);
     console.log('💳 Available payment methods:', paymentMethods);
     
-    // Find the category ID that matches the AI suggestion (case-insensitive)
-    const suggestedCategory = categories.find(cat => 
+    // Enhanced category matching with multiple strategies
+    let matchedCategory = null;
+    
+    // Strategy 1: Exact case-insensitive match
+    matchedCategory = categories.find(cat => 
       cat.name.toLowerCase() === result.category.toLowerCase()
     );
     
-    if (suggestedCategory) {
-      console.log('✅ Found matching category:', suggestedCategory);
-      setFormData(prev => ({
-        ...prev,
-        categoryId: suggestedCategory.id,
-        customCategory: result.category === 'Other' ? '' : ''
-      }));
-    } else {
-      console.log('❌ No exact category match found for:', result.category);
-      // Try partial matching
-      const partialMatch = categories.find(cat => 
+    // Strategy 2: Partial match (if exact fails)
+    if (!matchedCategory) {
+      matchedCategory = categories.find(cat => 
         cat.name.toLowerCase().includes(result.category.toLowerCase()) ||
         result.category.toLowerCase().includes(cat.name.toLowerCase())
       );
+    }
+    
+    // Strategy 3: Fuzzy matching for common variations
+    if (!matchedCategory) {
+      const categoryVariations: Record<string, string[]> = {
+        'Office Supplies': ['office supplies', 'office', 'supplies', 'stationary', 'stationery', 'printer', 'desk', 'chair', 'mugs', 'software'],
+        'Food & Dining': ['food & dining', 'food', 'dining', 'meals', 'restaurant', 'lunch', 'coffee', 'cafe', 'starbucks'],
+        'Transportation': ['transportation', 'transport', 'travel', 'commute', 'uber', 'lyft', 'taxi', 'gas'],
+        'Utilities': ['utilities', 'utility', 'bills', 'services', 'water', 'electric', 'internet', 'water bill'],
+        'Entertainment': ['entertainment', 'entertain', 'leisure', 'recreation'],
+        'Healthcare': ['healthcare', 'health', 'medical', 'doctor'],
+        'Travel': ['travel', 'trip', 'vacation', 'business travel'],
+        'Shopping': ['shopping', 'retail', 'purchase', 'buy', 'amazon', 'walmart', 'target'],
+        'Education': ['education', 'learning', 'training', 'course'],
+        'Insurance': ['insurance', 'insure', 'coverage', 'policy'],
+        'Taxes': ['taxes', 'tax', 'taxation', 'irs'],
+        'Other': ['other', 'miscellaneous', 'misc', 'general', 'paid ads']
+      };
       
-      if (partialMatch) {
-        console.log('🔍 Found partial category match:', partialMatch);
+      const variations = categoryVariations[result.category] || [];
+      matchedCategory = categories.find(cat => 
+        variations.some(variation => 
+          cat.name.toLowerCase().includes(variation.toLowerCase())
+        )
+      );
+    }
+    
+    if (matchedCategory) {
+      console.log('✅ Found matching category:', matchedCategory);
+      setFormData(prev => ({
+        ...prev,
+        categoryId: matchedCategory.id,
+        customCategory: ''
+      }));
+    } else {
+      console.log('❌ No category match found for:', result.category);
+      console.log('🔍 Available category names:', categories.map(c => c.name));
+      
+      // Set to "Other" category if available
+      const otherCategory = categories.find(cat => 
+        cat.name.toLowerCase() === 'other'
+      );
+      if (otherCategory) {
         setFormData(prev => ({
           ...prev,
-          categoryId: partialMatch.id,
-          customCategory: ''
+          categoryId: otherCategory.id,
+          customCategory: result.category // Store AI suggestion as custom category
         }));
-      } else {
-        console.log('❌ No category match found, even partial');
       }
     }
 
     // Find the payment method ID that matches the AI suggestion
     if (result.suggestedPaymentMethod) {
       const suggestedPaymentMethod = paymentMethods.find(pm => 
-        pm.name.toLowerCase() === result.suggestedPaymentMethod.toLowerCase()
+        pm.name.toLowerCase() === result.suggestedPaymentMethod!.toLowerCase()
       );
       if (suggestedPaymentMethod) {
         console.log('✅ Found matching payment method:', suggestedPaymentMethod);
@@ -438,7 +477,7 @@ const ManualExpensePage: React.FC<ManualExpensePageProps> = ({
         amount: parseFloat(formData.amount),
         description: formData.description.trim(),
         currency: 'INR', // Default currency
-        category_id: formData.categoryId || null,
+        global_category_id: formData.categoryId || null, // FIXED: Use global_category_id instead of category_id
         category_confidence: aiResult?.confidence || null,
         category_source: aiResult ? 'ai' : 'manual',
         payment_method_id: formData.paymentMethodId || null,
@@ -448,7 +487,11 @@ const ManualExpensePage: React.FC<ManualExpensePageProps> = ({
         is_reimbursable: formData.isReimbursable
       };
       
-      console.log('Attempting to insert expense:', insertData);
+      console.log('🔍 Debug: Form data before submission:', formData);
+      console.log('🔍 Debug: AI result:', aiResult);
+      console.log('🔍 Debug: Attempting to insert expense:', insertData);
+      console.log('🔍 Debug: Category ID being saved:', formData.categoryId);
+      console.log('🔍 Debug: Available categories:', categories);
       
       // Insert into Supabase
       const { error } = await supabase
