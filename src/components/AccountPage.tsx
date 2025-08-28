@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import BusinessModal from './BusinessModal';
+import AddExpenseModal from './AddExpenseModal';
 
 interface Expense {
   id: string;
@@ -85,7 +86,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
   // State management
   const [currentView, setCurrentView] = useState<'dashboard' | 'inbox' | 'expenses' | 'manual-entry' | 'profile'>('dashboard');
   const [selectedExpenses, setSelectedExpenses] = useState<string[]>([]);
-  const [showAddDropdown, setShowAddDropdown] = useState(false);
+  const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [showBusinessModal, setShowBusinessModal] = useState(false);
@@ -1096,10 +1097,10 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Primary Action Row */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 space-y-4 sm:space-y-0">
-          {/* Add Expense Dropdown */}
+          {/* Add Expense Button */}
           <div className="relative">
             <button
-              onClick={() => setShowAddDropdown(!showAddDropdown)}
+              onClick={() => setShowAddExpenseModal(true)}
               disabled={isActionsDisabled}
               title={isActionsDisabled ? "Select a business to start adding expenses" : ""}
               className={`px-6 py-3 rounded-xl font-semibold focus:ring-2 focus:ring-offset-2 transition-all shadow-lg flex items-center space-x-2 ${
@@ -1110,70 +1111,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
             >
               <Plus className="w-5 h-5" />
               <span>Add Expense</span>
-              <ChevronDown className="w-4 h-4" />
             </button>
-
-            {showAddDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-brand-soft-gray/20 py-2 z-50">
-                <button
-                  onClick={() => {
-                    setShowAddDropdown(false);
-                    isActionsDisabled ? handleDisabledAction() : fileInputRef.current?.click();
-                  }}
-                  disabled={isActionsDisabled}
-                  className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3"
-                >
-                  <Upload className="w-5 h-5 text-brand-dark-teal" />
-                  <div>
-                    <div className="font-medium text-brand-text-dark">Upload Receipt</div>
-                    <div className="text-sm text-brand-text-muted">Drag & drop or click to upload</div>
-                  </div>
-                </button>
-                
-                <button 
-                  onClick={() => {
-                    setShowAddDropdown(false);
-                    isActionsDisabled ? handleDisabledAction() : handleCameraCapture();
-                  }}
-                  className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3">
-                  <Camera className="w-5 h-5 text-brand-dark-teal" />
-                  <div>
-                    <div className="font-medium text-brand-text-dark">Camera Capture</div>
-                    <div className="text-sm text-brand-text-muted">Take photo with camera</div>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setShowAddDropdown(false);
-                    isActionsDisabled ? handleDisabledAction() : handleVoiceRecord();
-                  }}
-                  disabled={isRecording || isActionsDisabled}
-                  className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3 disabled:opacity-50"
-                >
-                  <Mic className={`w-5 h-5 text-brand-dark-teal ${isRecording ? 'animate-pulse' : ''}`} />
-                  <div>
-                    <div className="font-medium text-brand-text-dark">
-                      {isRecording ? 'Recording...' : 'Voice Capture'}
-                    </div>
-                    <div className="text-sm text-brand-text-muted">Press and hold to record</div>
-                  </div>
-                </button>
-                
-                <button 
-                  onClick={() => {
-                    setShowAddDropdown(false);
-                    isActionsDisabled ? handleDisabledAction() : handleManualEntry();
-                  }}
-                  className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3">
-                  <Edit3 className="w-5 h-5 text-brand-dark-teal" />
-                  <div>
-                    <div className="font-medium text-brand-text-dark">Manual Entry</div>
-                    <div className="text-sm text-brand-text-muted">Enter expense details</div>
-                  </div>
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Quick Links */}
@@ -1818,12 +1756,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
           onClick={() => setWorkspaceDropdownOpen(false)}
         />
       )}
-      {showAddDropdown && (
-        <div 
-          className="fixed inset-0 z-30" 
-          onClick={() => setShowAddDropdown(false)}
-        />
-      )}
+
 
       {/* Business Creation Modal */}
       <BusinessModal
@@ -1831,6 +1764,18 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
         onClose={() => setShowCreateBusinessModal(false)}
         onBusinessCreated={handleBusinessCreated}
         user={user}
+      />
+
+      {/* Add Expense Modal */}
+      <AddExpenseModal
+        isOpen={showAddExpenseModal}
+        onClose={() => setShowAddExpenseModal(false)}
+        activeWorkspaceId={activeWorkspace}
+        currentUser={user}
+        onExpenseAdded={() => {
+          setShowAddExpenseModal(false);
+          fetchExpenses(); // Refresh the expenses list
+        }}
       />
     </div>
   );
