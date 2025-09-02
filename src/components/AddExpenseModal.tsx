@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Mic, Upload, Camera, Edit3, ArrowLeft, DollarSign, Calendar, Building, FileText, Tag, CreditCard, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, Mic, Upload, Camera, Edit3, ArrowLeft, DollarSign, Calendar, Building, FileText, Tag, CreditCard, Loader2, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
 import { voiceAnalysisService, VoiceAnalysisResult } from '../lib/voice-analysis';
+import { receiptProcessingService, ReceiptProcessingResult } from '../lib/receipt-processing';
 import { supabase } from '../lib/supabase';
 import { AICategorizationResult } from '../lib/ai-categorization';
 
@@ -61,7 +62,15 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   const [isVoiceProcessing, setIsVoiceProcessing] = useState(false);
   const [voiceResult, setVoiceResult] = useState<VoiceAnalysisResult | null>(null);
   const [voiceError, setVoiceError] = useState<string | null>(null);
-  const [expenseSource, setExpenseSource] = useState<'voice' | 'manual'>('manual');
+  const [expenseSource, setExpenseSource] = useState<'voice' | 'manual' | 'receipt'>('manual');
+  
+  // Receipt processing state
+  const [isReceiptProcessing, setIsReceiptProcessing] = useState(false);
+  const [receiptResult, setReceiptResult] = useState<ReceiptProcessingResult | null>(null);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState<FormData>({
@@ -117,13 +126,74 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   const loadFormData = async () => {
     setIsLoadingData(true);
     try {
-      const [categoriesResult, paymentMethodsResult] = await Promise.all([
-        supabase.from('global_categories').select('*').order('name'),
-        supabase.from('payment_methods').select('*').eq('workspace_id', activeWorkspaceId).order('name')
-      ]);
+      console.log('🔍 Starting to fetch categories for modal workspace:', activeWorkspaceId);
+      
+      // Try to fetch categories from the workspace mappings first (consistent with other components)
+      console.log('📡 Attempting to fetch workspace-specific categories for modal...');
+      const { data: globalCategoriesData, error: globalCategoriesError } = await supabase
+        .from('workspace_category_mappings')
+        .select(`
+          id,
+          global_categories!inner(
+            id,
+            name,
+            description,
+            color,
+            icon
+          )
+        `)
+        .eq('workspace_id', activeWorkspaceId)
+        .eq('is_active', true)
+        .order('name', { foreignTable: 'global_categories' });
 
-      if (categoriesResult.data) setCategories(categoriesResult.data);
-      if (paymentMethodsResult.data) setPaymentMethods(paymentMethodsResult.data);
+      console.log('📊 Modal workspace categories response:', { data: globalCategoriesData, error: globalCategoriesError });
+
+      let categories: Category[] = [];
+      if (!globalCategoriesError && globalCategoriesData && globalCategoriesData.length > 0) {
+        // Use the global_categories.id instead of the mapping id
+        categories = globalCategoriesData.map((item: any) => ({
+          id: item.global_categories.id, // Use the actual category ID, not the mapping ID
+          name: item.global_categories.name,
+          description: item.global_categories.description,
+          color: item.global_categories.color,
+          icon: item.global_categories.icon
+        }));
+        
+        console.log('✅ Successfully fetched workspace categories for modal:', categories.length, categories);
+      } else {
+        console.log('⚠️ Workspace categories failed or empty for modal, falling back to global categories');
+        console.log('❌ Error details:', globalCategoriesError);
+        
+        // Fallback to global categories directly
+        console.log('📡 Attempting to fetch global categories directly for modal...');
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('global_categories')
+          .select('id, name, description, color, icon')
+          .order('name');
+        
+        if (fallbackError) {
+          console.error('❌ Direct global categories fetch failed for modal:', fallbackError);
+          categories = [];
+        } else {
+          categories = fallbackData || [];
+          console.log('✅ Fetched global categories directly for modal:', categories.length);
+        }
+      }
+
+      // Fetch payment methods
+      const { data: paymentMethodsData, error: paymentMethodsError } = await supabase
+        .from('payment_methods')
+        .select('*')
+        .eq('workspace_id', activeWorkspaceId)
+        .order('name');
+
+      if (paymentMethodsError) {
+        console.error('❌ Payment methods fetch failed for modal:', paymentMethodsError);
+      }
+
+      setCategories(categories);
+      setPaymentMethods(paymentMethodsData || []);
+      
     } catch (error) {
       console.error('Error loading form data:', error);
     } finally {
@@ -135,6 +205,11 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     setCurrentView('main');
     setVoiceResult(null);
     setVoiceError(null);
+    setReceiptResult(null);
+    setReceiptError(null);
+    setUploadedFile(null);
+    setReceiptPreviewUrl(null);
+    setIsDragOver(false);
     setExpenseSource('manual');
     setFormData({
       date: new Date().toISOString().split('T')[0],
@@ -274,13 +349,157 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   };
 
   const handleUpload = () => {
-    // TODO: Implement file upload functionality
     console.log('Upload selected');
+    setCurrentView('upload');
   };
 
   const handleCameraCapture = () => {
     // TODO: Implement camera capture functionality
     console.log('Camera capture selected');
+  };
+
+  const handleFileUpload = async (file: File) => {
+    console.log('📄 Processing receipt file:', file.name);
+    setIsReceiptProcessing(true);
+    setReceiptError(null);
+    setUploadedFile(file);
+    
+    // Create preview URL for images
+    if (file.type.startsWith('image/')) {
+      const previewUrl = URL.createObjectURL(file);
+      setReceiptPreviewUrl(previewUrl);
+    }
+    
+    try {
+      console.log('🔍 Starting receipt processing');
+      
+      // Process the receipt using our service
+      const result = await receiptProcessingService.processReceipt(file, currentUser?.id);
+      console.log('✅ Receipt processed successfully:', result);
+      
+      setReceiptResult(result);
+      
+      // Populate form with receipt data
+      populateFormFromReceipt(result);
+      
+      // Set the source as receipt
+      setExpenseSource('receipt');
+      
+      // Show success message briefly before switching to form view
+      setTimeout(() => {
+        setCurrentView('form');
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Receipt processing failed:', error);
+      setReceiptError(error instanceof Error ? error.message : 'Failed to process receipt. Please try again.');
+    } finally {
+      setIsReceiptProcessing(false);
+    }
+  };
+
+  const populateFormFromReceipt = (receiptData: ReceiptProcessingResult) => {
+    setFormData(prev => ({
+      ...prev,
+      merchant: receiptData.merchant || prev.merchant,
+      amount: receiptData.amount ? receiptData.amount.toString() : prev.amount,
+      description: receiptData.description || prev.description,
+      date: receiptData.date || prev.date,
+      notes: receiptData.notes || prev.notes
+    }));
+    
+    // Clear any previous AI results when using receipt input
+    setAiResult(null);
+    
+    // Trigger AI categorization after a 2-second delay
+    setTimeout(() => {
+      triggerReceiptAICategorization(receiptData);
+    }, 2000);
+  };
+
+  const triggerReceiptAICategorization = async (receiptData: ReceiptProcessingResult) => {
+    if (!activeWorkspaceId || !currentUser) return;
+    
+    try {
+      console.log('🤖 Triggering AI categorization for receipt input');
+      
+      // Use the AI categorization service directly with receipt data
+      const aiCategorizationService = await import('../lib/ai-categorization');
+      
+      if (aiCategorizationService.aiCategorizationService.isAvailable()) {
+        const expenseContext = {
+          merchant: receiptData.merchant,
+          amount: receiptData.amount,
+          description: receiptData.description,
+          date: receiptData.date,
+          currency: 'INR',
+          notes: receiptData.notes
+        };
+        
+        const aiResult = await aiCategorizationService.aiCategorizationService.categorizeExpense(expenseContext);
+        
+        if (aiResult && !('error' in aiResult)) {
+          console.log('✅ AI categorization successful:', aiResult);
+          setAiResult(aiResult);
+          
+          // Auto-select the suggested category if available
+          if (aiResult.category && categories.length > 0) {
+            const suggestedCategory = categories.find(cat => cat.name === aiResult.category);
+            if (suggestedCategory) {
+              setFormData(prev => ({
+                ...prev,
+                categoryId: suggestedCategory.id
+              }));
+              console.log('✅ Auto-selected category:', suggestedCategory.name);
+            }
+          }
+          
+          // Auto-select the suggested payment method if available
+          if (aiResult.suggestedPaymentMethod && paymentMethods.length > 0) {
+            const suggestedPaymentMethod = paymentMethods.find(pm => pm.name === aiResult.suggestedPaymentMethod);
+            if (suggestedPaymentMethod) {
+              setFormData(prev => ({
+                ...prev,
+                paymentMethodId: suggestedPaymentMethod.id
+              }));
+              console.log('✅ Auto-selected payment method:', suggestedPaymentMethod.name);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('AI categorization failed:', error);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleFileUpload(files[0]);
+    }
+  };
+
+  const removeUploadedFile = () => {
+    setUploadedFile(null);
+    setReceiptResult(null);
+    setReceiptError(null);
+    if (receiptPreviewUrl) {
+      URL.revokeObjectURL(receiptPreviewUrl);
+      setReceiptPreviewUrl(null);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -419,11 +638,13 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
         workspace_id: activeWorkspaceId,
         user_id: currentUser?.id,
         currency: 'INR',
-        source: expenseSource, // Tag correctly based on source
+        source: expenseSource === 'receipt' ? 'upload' : expenseSource, // Map receipt to upload for enum
         status: 'unreviewed' as const,
         category_confidence: aiResult?.confidence || 0,
         category_source: aiResult ? 'ai' : 'manual',
         payment_method_source: aiResult ? 'ai' : 'manual',
+        receipt_url: receiptResult?.receiptUrl || null,
+        extracted_text: receiptResult?.extractedText || null,
       };
       
       console.log('💾 Submitting expense data:', expenseData);
@@ -682,8 +903,137 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
           )}
 
           {currentView === 'upload' && (
-            <div className="text-center py-8">
-              <p className="text-gray-600">Upload functionality coming soon...</p>
+            <div className="space-y-4">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Upload className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Upload Receipt</h3>
+                <p className="text-sm text-gray-600">Upload an image or PDF of your receipt</p>
+              </div>
+
+              {/* File Upload Area */}
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                  isDragOver 
+                    ? 'border-orange-500 bg-orange-50' 
+                    : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50'
+                }`}
+              >
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileUpload(file);
+                  }}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={isReceiptProcessing || isFormDisabled}
+                />
+                
+                <div className="space-y-4">
+                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
+                    <Upload className="w-6 h-6 text-orange-600" />
+                  </div>
+                  
+                  <div>
+                    <p className="text-lg font-medium text-gray-700 mb-2">
+                      {isDragOver ? 'Drop your receipt here' : 'Drag & drop your receipt here'}
+                    </p>
+                    <p className="text-sm text-gray-500 mb-4">
+                      or click to browse files
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Supports JPG, PNG, WebP, and PDF files up to 10MB
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Uploaded File Preview */}
+              {uploadedFile && (
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium text-gray-800">Uploaded File</h4>
+                    <button
+                      onClick={removeUploadedFile}
+                      className="text-red-500 hover:text-red-700 transition-colors"
+                      disabled={isReceiptProcessing}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4">
+                    {receiptPreviewUrl ? (
+                      <img
+                        src={receiptPreviewUrl}
+                        alt="Receipt preview"
+                        className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-gray-400" />
+                      </div>
+                    )}
+                    
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-700">{uploadedFile.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Processing Status */}
+              {isReceiptProcessing && (
+                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="w-5 h-5 text-orange-600 animate-spin" />
+                    <span className="text-sm text-orange-700 font-medium">
+                      Processing receipt... This may take a few seconds.
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Processing Error */}
+              {receiptError && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                    <span className="text-sm text-red-700">{receiptError}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Processing Success */}
+              {receiptResult && !isReceiptProcessing && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <span className="text-sm text-green-700 font-medium">
+                        Receipt processed successfully! Redirecting to form...
+                      </span>
+                    </div>
+                    
+                    <div className="text-xs text-green-600 space-y-1">
+                      <p><strong>Merchant:</strong> {receiptResult.merchant}</p>
+                      <p><strong>Amount:</strong> ${receiptResult.amount}</p>
+                      <p><strong>Description:</strong> {receiptResult.description}</p>
+                      {receiptResult.confidence && (
+                        <p><strong>Confidence:</strong> {Math.round(receiptResult.confidence * 100)}%</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
