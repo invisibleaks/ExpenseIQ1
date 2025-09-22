@@ -84,7 +84,10 @@ const ManualExpensePage: React.FC<ManualExpensePageProps> = ({
   
   // Check if AI categorization is available
   useEffect(() => {
-    setIsAIAvailable(aiCategorizationService.isAvailable());
+    const isAvailable = aiCategorizationService.isAvailable();
+    const serviceInfo = aiCategorizationService.getServiceInfo();
+    console.log('🤖 AI Categorization Service Status:', serviceInfo);
+    setIsAIAvailable(isAvailable);
   }, []);
 
   // Debug: Check Supabase configuration
@@ -107,7 +110,17 @@ const ManualExpensePage: React.FC<ManualExpensePageProps> = ({
 
   // Auto-categorize when merchant, amount, and description are filled
   useEffect(() => {
+    console.log('🔍 Auto-categorization trigger check:', {
+      isAIAvailable,
+      merchant: formData.merchant.trim(),
+      amount: formData.amount.trim(),
+      description: formData.description.trim(),
+      isAICategorizing,
+      shouldTrigger: isAIAvailable && formData.merchant.trim() && formData.amount.trim() && formData.description.trim() && !isAICategorizing
+    });
+
     if (isAIAvailable && formData.merchant.trim() && formData.amount.trim() && formData.description.trim() && !isAICategorizing) {
+      console.log('🚀 Triggering AI categorization in 1 second...');
       // Debounce the AI categorization to avoid too many API calls
       const timer = setTimeout(() => {
         autoCategorizeExpense();
@@ -115,7 +128,7 @@ const ManualExpensePage: React.FC<ManualExpensePageProps> = ({
 
       return () => clearTimeout(timer);
     }
-  }, [formData.merchant, formData.amount, formData.description, isAIAvailable]);
+  }, [formData.merchant, formData.amount, formData.description, isAIAvailable, isAICategorizing]);
 
   const fetchCategoriesAndPaymentMethods = async () => {
     if (!activeWorkspaceId) return;

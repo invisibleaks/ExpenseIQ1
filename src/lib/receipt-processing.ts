@@ -46,17 +46,12 @@ class ReceiptProcessingService {
   // Extract text from receipt image using Tesseract.js OCR
   private async extractTextFromFile(file: File): Promise<string> {
     try {
-      console.log('🔍 Starting Tesseract OCR processing for:', file.name);
+      console.log('🔍 Starting text extraction for:', file.name);
       
-      // Handle PDF files differently - for now, show a helpful message
+      // Handle PDF files using Supabase Edge Function
       if (file.type === 'application/pdf') {
-        console.log('📄 PDF file detected - using fallback text extraction');
-        return `PDF RECEIPT DETECTED
-Merchant: ${file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, ' ')}
-Date: ${new Date().toLocaleDateString()}
-Amount: Please verify amount manually
-Note: PDF text extraction requires additional setup
-File: ${file.name}`;
+        console.log('📄 PDF file detected - using Supabase Edge Function for processing');
+        return await this.processPDFWithEdgeFunction(file);
       }
 
       // Create Tesseract worker
@@ -232,6 +227,153 @@ Example:
     };
   }
 
+  // Process PDF receipt using Supabase Edge Function
+  private async processPDFReceipt(file: File, userId?: string): Promise<ReceiptProcessingResult> {
+    try {
+      console.log('📡 Sending PDF to Supabase Edge Function for full processing...');
+      
+      // Convert file to base64
+      const arrayBuffer = await file.arrayBuffer();
+      const base64String = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      
+      // Call the Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('pdf-processing', {
+        body: {
+          fileData: base64String,
+          fileName: file.name,
+          userId: userId
+        }
+      });
+      
+      if (error) {
+        console.error('❌ PDF processing Edge Function error:', error);
+        throw new Error(`PDF processing failed: ${error.message}`);
+      }
+      
+      if (!data) {
+        throw new Error('No data returned from PDF processing');
+      }
+      
+      // Upload file if user is provided
+      let receiptUrl: string | undefined;
+      if (userId) {
+        try {
+          receiptUrl = await this.uploadReceiptFile(file, userId);
+        } catch (uploadError) {
+          console.warn('⚠️ File upload failed, continuing without URL:', uploadError);
+        }
+      }
+      
+      const result: ReceiptProcessingResult = {
+        merchant: data.merchant || 'Unknown',
+        amount: data.amount || 0,
+        description: data.description || 'Receipt processing',
+        date: data.date,
+        notes: data.notes,
+        confidence: data.confidence || 0.7,
+        extractedText: data.extractedText || '',
+        receiptUrl: receiptUrl
+      };
+      
+      console.log('✅ PDF processed successfully via Edge Function:', result);
+      return result;
+      
+    } catch (error) {
+      console.error('❌ PDF processing failed:', error);
+      
+      // Return fallback result
+      const fallbackResult: ReceiptProcessingResult = {
+        merchant: 'Unknown',
+        amount: 0,
+        description: 'PDF processing failed',
+        confidence: 0.7,
+        extractedText: `PDF RECEIPT - ${file.name}
+Date: ${new Date().toLocaleDateString()}
+Note: PDF processing failed - please verify details manually
+File: ${file.name}`,
+        notes: `Processing failed: ${error.message}`
+      };
+      
+      // Upload file if user is provided
+      if (userId) {
+        try {
+          const receiptUrl = await this.uploadReceiptFile(file, userId);
+          fallbackResult.receiptUrl = receiptUrl;
+        } catch (uploadError) {
+          console.warn('⚠️ File upload failed, continuing without URL:', uploadError);
+        }
+      }
+      
+      return fallbackResult;
+    }
+  }
+
+  // Process PDF using Supabase Edge Function (for text extraction only)
+  private async processPDFWithEdgeFunction(file: File): Promise<string> {
+    try {
+      console.log('📡 Sending PDF to Supabase Edge Function for processing...');
+      
+      // Convert file to base64
+      const arrayBuffer = await file.arrayBuffer();
+      const base64String = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      
+      // Call the Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('pdf-processing', {
+        body: {
+          fileData: base64String,
+          fileName: file.name,
+          userId: undefined // We'll get this from the main processReceipt method
+        }
+      });
+      
+      if (error) {
+        console.error('❌ PDF processing Edge Function error:', error);
+        throw new Error(`PDF processing failed: ${error.message}`);
+      }
+      
+      if (!data || !data.extractedText) {
+        throw new Error('No text extracted from PDF');
+      }
+      
+      console.log('✅ PDF processed successfully via Edge Function');
+      return data.extractedText;
+      
+    } catch (error) {
+      console.error('❌ PDF processing failed:', error);
+      
+      // Return fallback text based on filename
+      const fileName = file.name.toLowerCase();
+      let fallbackText = `PDF RECEIPT - ${file.name}
+Date: ${new Date().toLocaleDateString()}
+Note: PDF processing failed - please verify details manually
+File: ${file.name}`;
+
+      // Add some context based on filename
+      if (fileName.includes('starbucks') || fileName.includes('coffee')) {
+        fallbackText += `
+Merchant: Starbucks
+Category: Food & Beverage
+Amount: Please verify manually`;
+      } else if (fileName.includes('uber') || fileName.includes('taxi') || fileName.includes('lyft')) {
+        fallbackText += `
+Merchant: Ride Service
+Category: Transportation  
+Amount: Please verify manually`;
+      } else if (fileName.includes('office') || fileName.includes('supplies')) {
+        fallbackText += `
+Merchant: Office Supplies
+Category: Office Supplies
+Amount: Please verify manually`;
+      } else {
+        fallbackText += `
+Merchant: Please verify manually
+Amount: Please verify manually`;
+      }
+      
+      return fallbackText;
+    }
+  }
+
   // Upload receipt file to Supabase storage
   private async uploadReceiptFile(file: File, userId: string): Promise<string> {
     try {
@@ -270,7 +412,13 @@ Example:
         throw new Error(validation.error);
       }
 
-      // Extract text using OCR
+      // Handle PDF files using Edge Function (which returns full result)
+      if (file.type === 'application/pdf') {
+        console.log('📄 Processing PDF with Edge Function...');
+        return await this.processPDFReceipt(file, userId);
+      }
+
+      // Extract text using OCR for images
       const extractedText = await this.extractTextFromFile(file);
       console.log('📝 Extracted text:', extractedText);
 

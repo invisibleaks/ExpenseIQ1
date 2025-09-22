@@ -8,6 +8,11 @@ export interface VoiceAnalysisResult {
   notes?: string;
   confidence: number;
   rawText: string;
+  // AI categorization results
+  aiCategory?: string;
+  aiConfidence?: number;
+  aiReasoning?: string;
+  suggestedPaymentMethod?: string;
 }
 
 export interface VoiceAnalysisError {
@@ -56,7 +61,12 @@ class VoiceAnalysisService {
         date: extractedInfo.date,
         notes: extractedInfo.notes,
         confidence: Math.min(extractedInfo.confidence * aiResult.confidence, 0.95),
-        rawText: voiceText
+        rawText: voiceText,
+        // Include AI categorization results
+        aiCategory: aiResult.category,
+        aiConfidence: aiResult.confidence,
+        aiReasoning: aiResult.reasoning,
+        suggestedPaymentMethod: aiResult.suggestedPaymentMethod
       };
 
     } catch (error) {

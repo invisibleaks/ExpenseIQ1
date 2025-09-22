@@ -278,69 +278,46 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
       notes: voiceData.notes || prev.notes
     }));
     
-    // Clear any previous AI results when using voice input
-    setAiResult(null);
-    
-    // Trigger AI categorization after a 2-second delay
-    setTimeout(() => {
-      triggerVoiceAICategorization(voiceData);
-    }, 2000);
-  };
-
-  const triggerVoiceAICategorization = async (voiceData: VoiceAnalysisResult) => {
-    if (!activeWorkspaceId || !currentUser) return;
-    
-    try {
-      console.log('🤖 Triggering AI categorization for voice input');
+    // Apply AI categorization results if available from voice analysis
+    if (voiceData.aiCategory) {
+      console.log('🤖 Applying AI categorization from voice analysis:', voiceData);
       
-      // Use the AI categorization service directly with voice data
-      const aiCategorizationService = await import('../lib/ai-categorization');
+      // Create AI result object for display
+      const aiResult = {
+        category: voiceData.aiCategory,
+        confidence: voiceData.aiConfidence || 0.8,
+        reasoning: voiceData.aiReasoning || 'AI categorization from voice analysis',
+        suggestedPaymentMethod: voiceData.suggestedPaymentMethod
+      };
       
-      if (aiCategorizationService.aiCategorizationService.isAvailable()) {
-        const expenseContext = {
-          merchant: voiceData.merchant,
-          amount: voiceData.amount,
-          description: voiceData.description,
-          date: voiceData.date,
-          currency: 'INR',
-          notes: voiceData.notes
-        };
-        
-        const aiResult = await aiCategorizationService.aiCategorizationService.categorizeExpense(expenseContext);
-        
-        if (aiResult && !('error' in aiResult)) {
-          console.log('✅ AI categorization successful:', aiResult);
-          setAiResult(aiResult);
-          
-          // Auto-select the suggested category if available
-          if (aiResult.category && categories.length > 0) {
-            const suggestedCategory = categories.find(cat => cat.name === aiResult.category);
-            if (suggestedCategory) {
-              setFormData(prev => ({
-                ...prev,
-                categoryId: suggestedCategory.id
-              }));
-              console.log('✅ Auto-selected category:', suggestedCategory.name);
-            }
-          }
-          
-          // Auto-select the suggested payment method if available
-          if (aiResult.suggestedPaymentMethod && paymentMethods.length > 0) {
-            const suggestedPaymentMethod = paymentMethods.find(pm => pm.name === aiResult.suggestedPaymentMethod);
-            if (suggestedPaymentMethod) {
-              setFormData(prev => ({
-                ...prev,
-                paymentMethodId: suggestedPaymentMethod.id
-              }));
-              console.log('✅ Auto-selected payment method:', suggestedPaymentMethod.name);
-            }
-          }
+      setAiResult(aiResult);
+      
+      // Auto-select the suggested category if available
+      if (voiceData.aiCategory && categories.length > 0) {
+        const suggestedCategory = categories.find(cat => cat.name === voiceData.aiCategory);
+        if (suggestedCategory) {
+          setFormData(prev => ({
+            ...prev,
+            categoryId: suggestedCategory.id
+          }));
+          console.log('✅ Auto-selected category from voice:', suggestedCategory.name);
         }
       }
-    } catch (error) {
-      console.error('AI categorization failed:', error);
+      
+      // Auto-select the suggested payment method if available
+      if (voiceData.suggestedPaymentMethod && paymentMethods.length > 0) {
+        const suggestedPaymentMethod = paymentMethods.find(pm => pm.name === voiceData.suggestedPaymentMethod);
+        if (suggestedPaymentMethod) {
+          setFormData(prev => ({
+            ...prev,
+            paymentMethodId: suggestedPaymentMethod.id
+          }));
+          console.log('✅ Auto-selected payment method from voice:', suggestedPaymentMethod.name);
+        }
+      }
     }
   };
+
 
   const handleManualEntry = () => {
     console.log('Manual entry selected');

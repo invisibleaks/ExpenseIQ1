@@ -51,14 +51,19 @@ export const PAYMENT_METHOD_PATTERNS = {
 
 class AICategorizationService {
   private supabaseUrl: string | null = null;
+  private openaiApiKey: string | null = null;
   private isConfigured: boolean = false;
 
   constructor() {
     this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL || null;
-    this.isConfigured = !!this.supabaseUrl;
+    this.openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY || null;
+    this.isConfigured = !!(this.supabaseUrl && this.openaiApiKey);
     
     if (!this.isConfigured) {
-      console.warn('Supabase URL not found. AI categorization will be disabled.');
+      console.warn('AI categorization is not configured. Missing:', {
+        supabaseUrl: !this.supabaseUrl ? 'VITE_SUPABASE_URL' : 'OK',
+        openaiKey: !this.openaiApiKey ? 'VITE_OPENAI_API_KEY' : 'OK'
+      });
     }
   }
 
@@ -342,6 +347,7 @@ class AICategorizationService {
     return {
       isAvailable: this.isAvailable(),
       supabaseUrl: this.supabaseUrl,
+      openaiApiKey: this.openaiApiKey ? 'Set' : 'Missing',
       edgeFunctionUrl: this.supabaseUrl ? `${this.supabaseUrl}/functions/v1/ai-categorization` : null,
       categories: DEFAULT_CATEGORIES,
       paymentMethods: Object.keys(PAYMENT_METHOD_PATTERNS)
