@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { createWorker } from 'tesseract.js';
+import { n8nService } from './n8n-service';
 
 // Types for receipt processing
 export interface ReceiptProcessingResult {
@@ -227,10 +228,69 @@ Example:
     };
   }
 
-  // Process PDF receipt using Supabase Edge Function
+  // Process PDF receipt using n8n workflow with Supabase fallback
   private async processPDFReceipt(file: File, userId?: string): Promise<ReceiptProcessingResult> {
+    let result: ReceiptProcessingResult;
+    let processingMethod = 'unknown';
+    
     try {
-      console.log('📡 Sending PDF to Supabase Edge Function for full processing...');
+      // First, try n8n workflow
+      console.log('🔄 Checking n8n availability for PDF processing...');
+      const isN8nAvailable = await n8nService.isN8nAvailable();
+      
+      if (isN8nAvailable) {
+        console.log('✅ n8n is available, using n8n workflow for PDF processing');
+        processingMethod = 'n8n';
+        result = await n8nService.processPdfWithN8n(file, userId);
+      } else {
+        console.log('⚠️ n8n not available, falling back to Supabase Edge Function');
+        processingMethod = 'supabase';
+        result = await this.processPDFWithSupabase(file, userId);
+      }
+      
+    } catch (n8nError) {
+      console.warn(`❌ ${processingMethod} processing failed:`, n8nError);
+      
+      // If n8n failed, try Supabase as fallback
+      if (processingMethod === 'n8n') {
+        try {
+          console.log('🔄 Falling back to Supabase Edge Function...');
+          result = await this.processPDFWithSupabase(file, userId);
+          processingMethod = 'supabase-fallback';
+        } catch (supabaseError) {
+          console.error('❌ Supabase fallback also failed:', supabaseError);
+          throw new Error(`Both n8n and Supabase processing failed. n8n: ${n8nError.message}, Supabase: ${supabaseError.message}`);
+        }
+      } else {
+        throw n8nError;
+      }
+    }
+    
+    // Upload file if user is provided and URL not already set
+    if (userId && !result.receiptUrl) {
+      try {
+        const receiptUrl = await this.uploadReceiptFile(file, userId);
+        result.receiptUrl = receiptUrl;
+      } catch (uploadError) {
+        console.warn('⚠️ File upload failed, continuing without URL:', uploadError);
+      }
+    }
+    
+    // Add processing method to notes
+    const processingNote = processingMethod === 'n8n' ? 'Processed via n8n workflow' :
+                          processingMethod === 'supabase' ? 'Processed via Supabase Edge Function' :
+                          'Processed via Supabase (n8n fallback)';
+    
+    result.notes = result.notes ? `${result.notes} | ${processingNote}` : processingNote;
+    
+    console.log(`✅ PDF processed successfully via ${processingMethod}:`, result);
+    return result;
+  }
+
+  // Process PDF using Supabase Edge Function (fallback method)
+  private async processPDFWithSupabase(file: File, userId?: string): Promise<ReceiptProcessingResult> {
+    try {
+      console.log('📡 Sending PDF to Supabase Edge Function for processing...');
       
       // Convert file to base64
       const arrayBuffer = await file.arrayBuffer();
@@ -246,22 +306,12 @@ Example:
       });
       
       if (error) {
-        console.error('❌ PDF processing Edge Function error:', error);
-        throw new Error(`PDF processing failed: ${error.message}`);
+        console.error('❌ Supabase PDF processing error:', error);
+        throw new Error(`Supabase processing failed: ${error.message}`);
       }
       
       if (!data) {
-        throw new Error('No data returned from PDF processing');
-      }
-      
-      // Upload file if user is provided
-      let receiptUrl: string | undefined;
-      if (userId) {
-        try {
-          receiptUrl = await this.uploadReceiptFile(file, userId);
-        } catch (uploadError) {
-          console.warn('⚠️ File upload failed, continuing without URL:', uploadError);
-        }
+        throw new Error('No data returned from Supabase processing');
       }
       
       const result: ReceiptProcessingResult = {
@@ -271,40 +321,14 @@ Example:
         date: data.date,
         notes: data.notes,
         confidence: data.confidence || 0.7,
-        extractedText: data.extractedText || '',
-        receiptUrl: receiptUrl
+        extractedText: data.extractedText || ''
       };
       
-      console.log('✅ PDF processed successfully via Edge Function:', result);
       return result;
       
     } catch (error) {
-      console.error('❌ PDF processing failed:', error);
-      
-      // Return fallback result
-      const fallbackResult: ReceiptProcessingResult = {
-        merchant: 'Unknown',
-        amount: 0,
-        description: 'PDF processing failed',
-        confidence: 0.7,
-        extractedText: `PDF RECEIPT - ${file.name}
-Date: ${new Date().toLocaleDateString()}
-Note: PDF processing failed - please verify details manually
-File: ${file.name}`,
-        notes: `Processing failed: ${error.message}`
-      };
-      
-      // Upload file if user is provided
-      if (userId) {
-        try {
-          const receiptUrl = await this.uploadReceiptFile(file, userId);
-          fallbackResult.receiptUrl = receiptUrl;
-        } catch (uploadError) {
-          console.warn('⚠️ File upload failed, continuing without URL:', uploadError);
-        }
-      }
-      
-      return fallbackResult;
+      console.error('❌ Supabase PDF processing failed:', error);
+      throw error;
     }
   }
 
@@ -404,7 +428,7 @@ Amount: Please verify manually`;
   // Main method to process a receipt file
   async processReceipt(file: File, userId?: string): Promise<ReceiptProcessingResult> {
     try {
-      console.log('📄 Processing receipt:', file.name);
+      console.log('📄 Processing receipt:', file.name, `(${file.type})`);
 
       // Validate file
       const validation = this.validateFile(file);
@@ -412,12 +436,15 @@ Amount: Please verify manually`;
         throw new Error(validation.error);
       }
 
-      // Handle PDF files using Edge Function (which returns full result)
+      // Handle PDF files using n8n workflow with fallback
       if (file.type === 'application/pdf') {
-        console.log('📄 Processing PDF with Edge Function...');
+        console.log('📄 Processing PDF file...');
         return await this.processPDFReceipt(file, userId);
       }
 
+      // Handle image files using OCR + AI analysis
+      console.log('🖼️ Processing image file with OCR...');
+      
       // Extract text using OCR for images
       const extractedText = await this.extractTextFromFile(file);
       console.log('📝 Extracted text:', extractedText);
@@ -440,8 +467,31 @@ Amount: Please verify manually`;
 
     } catch (error) {
       console.error('❌ Receipt processing failed:', error);
-      throw error;
+      
+      // Provide user-friendly error messages
+      let userFriendlyError = 'Failed to process receipt. Please try again.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('n8n') && error.message.includes('Supabase')) {
+          userFriendlyError = 'PDF processing services are currently unavailable. Please try again later or enter details manually.';
+        } else if (error.message.includes('n8n')) {
+          userFriendlyError = 'PDF processing service is temporarily unavailable. Please try again or enter details manually.';
+        } else if (error.message.includes('OCR')) {
+          userFriendlyError = 'Could not read text from image. Please ensure the image is clear and try again.';
+        } else if (error.message.includes('OpenAI') || error.message.includes('AI')) {
+          userFriendlyError = 'AI analysis service is temporarily unavailable. Please try again later.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          userFriendlyError = 'Network error. Please check your connection and try again.';
+        }
+      }
+      
+      throw new Error(userFriendlyError);
     }
+  }
+
+  // Method to test n8n connection (for debugging/admin purposes)
+  async testN8nConnection(): Promise<{ success: boolean; message: string }> {
+    return await n8nService.testConnection();
   }
 }
 

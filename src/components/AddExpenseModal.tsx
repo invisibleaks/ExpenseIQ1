@@ -972,9 +972,18 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                 <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
                   <div className="flex items-center space-x-2">
                     <Loader2 className="w-5 h-5 text-orange-600 animate-spin" />
-                    <span className="text-sm text-orange-700 font-medium">
-                      Processing receipt... This may take a few seconds.
-                    </span>
+                    <div className="flex-1">
+                      <span className="text-sm text-orange-700 font-medium">
+                        {uploadedFile?.type === 'application/pdf' 
+                          ? 'Processing PDF receipt...' 
+                          : 'Processing image receipt...'}
+                      </span>
+                      <p className="text-xs text-orange-600 mt-1">
+                        {uploadedFile?.type === 'application/pdf' 
+                          ? 'Using advanced PDF processing workflow. This may take 15-30 seconds.' 
+                          : 'Extracting text and analyzing content. This may take a few seconds.'}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -982,9 +991,35 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
               {/* Processing Error */}
               {receiptError && (
                 <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <AlertCircle className="w-5 h-5 text-red-600" />
-                    <span className="text-sm text-red-700">{receiptError}</span>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <AlertCircle className="w-5 h-5 text-red-600" />
+                      <span className="text-sm text-red-700">{receiptError}</span>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReceiptError(null);
+                          setUploadedFile(null);
+                          setReceiptPreviewUrl(null);
+                        }}
+                        className="px-3 py-1.5 text-xs font-medium text-red-700 bg-white border border-red-300 rounded-md hover:bg-red-50 transition-colors"
+                      >
+                        Try Again
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReceiptError(null);
+                          setCurrentView('form');
+                          setExpenseSource('manual');
+                        }}
+                        className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 border border-red-600 rounded-md hover:bg-red-700 transition-colors"
+                      >
+                        Enter Manually
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1006,6 +1041,9 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                       <p><strong>Description:</strong> {receiptResult.description}</p>
                       {receiptResult.confidence && (
                         <p><strong>Confidence:</strong> {Math.round(receiptResult.confidence * 100)}%</p>
+                      )}
+                      {receiptResult.notes && (
+                        <p><strong>Processing:</strong> {receiptResult.notes}</p>
                       )}
                     </div>
                   </div>
