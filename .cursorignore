@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+dist/
+
+# Build outputs
+target/
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Supabase local development
+.supabase/
+
+# Large files
+*.sql
+*.md

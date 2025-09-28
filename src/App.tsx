@@ -4,8 +4,8 @@ import AccountPage from './components/AccountPage';
 import SignUpPage from './components/SignUpPage';
 import LoginPage from './components/LoginPage';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
-import WaitlistModal from './components/WaitlistModal';
-import WaitlistButton from './components/WaitlistButton';
+
+import { StarBorder } from './components/ui/star-border';
 import { 
   Brain, 
   Clock, 
@@ -37,7 +37,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'signup' | 'login' | 'forgot-password' | 'account'>('home');
   const [darkMode, setDarkMode] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -91,13 +91,7 @@ function App() {
     setOpenFaq(openFaq === index ? null : index);
   };
 
-  const openWaitlistModal = () => {
-    setIsWaitlistModalOpen(true);
-  };
 
-  const closeWaitlistModal = () => {
-    setIsWaitlistModalOpen(false);
-  };
 
   // Navigation handlers
   const navigateToHome = () => setCurrentPage('home');
@@ -243,7 +237,7 @@ function App() {
               >
                 {darkMode ? <Sun className="w-4 h-4 text-brand-warm-beige" /> : <Moon className="w-4 h-4 text-brand-dark-teal" />}
               </button>
-              <WaitlistButton onClick={openWaitlistModal} size="sm" />
+
             </div>
 
             {/* Mobile Menu Button */}
@@ -318,9 +312,7 @@ function App() {
                     </button>
                   </>
                 )}
-                <div className="pt-2">
-                  <WaitlistButton onClick={openWaitlistModal} size="md" className="w-full" />
-                </div>
+
               </div>
             </div>
           )}
@@ -343,15 +335,18 @@ function App() {
               <span className="text-brand-dark-teal dark:text-brand-warm-beige font-semibold"> Save 10+ hours every month.</span>
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8 sm:mb-12">
-              <WaitlistButton onClick={openWaitlistModal} size="lg" />
-              <button 
+            <div className="flex justify-center mb-8 sm:mb-12">
+              <StarBorder 
                 onClick={navigateToSignup}
-                className="border-2 border-brand-soft-gray dark:border-brand-muted-teal text-brand-text-muted dark:text-brand-soft-gray px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:border-brand-dark-teal hover:text-brand-dark-teal dark:hover:border-brand-warm-beige dark:hover:text-brand-warm-beige transition-all flex items-center space-x-2"
+                color="rgba(232, 220, 198, 0.8)" // Softer brand-warm-beige
+                speed="5s"
+                className="group font-semibold transition-all transform hover:scale-105"
               >
-                <span>Sign Up Free</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+                <div className="flex items-center space-x-2 px-4 py-2">
+                  <span className="text-slate-700 dark:text-slate-200 text-lg">Get Started Free</span>
+                  <ArrowRight className="w-5 h-5 text-slate-700 dark:text-slate-200 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </StarBorder>
             </div>
 
          
@@ -616,13 +611,17 @@ function App() {
           </div>
           
           <div className="text-center mt-12 flex justify-center">
-            <button
+            <StarBorder
               onClick={navigateToSignup}
-              className="group font-semibold transition-all transform hover:scale-105 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 flex items-center justify-center space-x-2 rounded-xl bg-brand-dark-teal dark:bg-white text-white dark:text-brand-dark-teal hover:bg-brand-dark-teal/90 dark:hover:bg-white/90 focus:ring-brand-dark-teal dark:focus:ring-white shadow-lg hover:shadow-xl px-8 py-4 text-lg"
+              color="rgba(59, 130, 246, 0.5)" // Soft blue
+              speed="6s"
+              className="group font-semibold transition-all transform hover:scale-105 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
             >
-              <span>Get Started Free</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
+              <div className="flex items-center justify-center space-x-2 px-4 py-2">
+                <span className="text-slate-800 dark:text-slate-100 text-lg">Get Started Free</span>
+                <ArrowRight className="w-5 h-5 text-slate-800 dark:text-slate-100 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </StarBorder>
           </div>
         </div>
       </section>
@@ -758,14 +757,20 @@ function App() {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8">
-              <button
+              <StarBorder
                 onClick={navigateToSignup}
-                className="group font-semibold transition-all transform hover:scale-105 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 flex items-center justify-center space-x-2 rounded-xl bg-brand-dark-teal dark:bg-white text-white dark:text-brand-dark-teal hover:bg-brand-dark-teal/90 dark:hover:bg-white/90 focus:ring-brand-dark-teal dark:focus:ring-white shadow-lg hover:shadow-xl px-8 py-4 text-lg"
+                color="rgba(34, 197, 94, 0.6)" // Soft green
+                speed="4s"
+                className="group font-semibold transition-all transform hover:scale-105 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
                 aria-label="Sign up for Expense IQ"
               >
-                <span>Start Free Trial</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
+                <div className="flex items-center justify-center space-x-2 px-4 py-2">
+                  <span className="text-slate-800 dark:text-slate-100 text-lg font-bold">
+                    Start Free Trial
+                  </span>
+                  <ArrowRight className="w-5 h-5 text-slate-800 dark:text-slate-100 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </StarBorder>
               <div className="text-brand-text-dark dark:text-brand-text-light font-medium text-sm text-center">
                 No credit card required • Cancel anytime • Set up in 5 minutes
               </div>
@@ -854,11 +859,7 @@ function App() {
         </div>
       </footer>
 
-      {/* Waitlist Modal */}
-      <WaitlistModal 
-        isOpen={isWaitlistModalOpen} 
-        onClose={closeWaitlistModal} 
-      />
+
       </div>
     </div>
   );

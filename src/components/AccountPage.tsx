@@ -35,13 +35,14 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import BusinessModal from './BusinessModal';
+import AddExpenseModal from './AddExpenseModal';
 
 interface Expense {
   id: string;
   merchant: string;
   amount: number;
   txn_date: string;
-  category_id: string;
+  global_category_id: string; // FIXED: Match actual database column name
   category_confidence: number;
   payment_method_id?: string;
   source: 'upload' | 'camera' | 'voice' | 'manual';
@@ -85,7 +86,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
   // State management
   const [currentView, setCurrentView] = useState<'dashboard' | 'inbox' | 'expenses' | 'manual-entry' | 'profile'>('dashboard');
   const [selectedExpenses, setSelectedExpenses] = useState<string[]>([]);
-  const [showAddDropdown, setShowAddDropdown] = useState(false);
+  const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [showBusinessModal, setShowBusinessModal] = useState(false);
@@ -249,7 +250,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
           merchant: expense.merchant,
           amount: expense.amount,
           txn_date: expense.txn_date,
-          category_id: expense.category_id,
+          global_category_id: expense.global_category_id,
           category_confidence: expense.category_confidence || 0,
           payment_method_id: expense.payment_method_id,
           source: expense.source,
@@ -281,13 +282,13 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
   const enrichExpensesWithNames = async (expenses: Expense[]) => {
     try {
       // Get unique category and payment method IDs
-      const categoryIds = [...new Set(expenses.map(e => e.category_id).filter(Boolean))];
+      const categoryIds = [...new Set(expenses.map(e => e.global_category_id).filter(Boolean))];
       const paymentMethodIds = [...new Set(expenses.map(e => e.payment_method_id).filter(Boolean))];
       
-      // Fetch category names
+      // Fetch category names from global_categories table
       if (categoryIds.length > 0) {
         const { data: categoryData, error: categoryError } = await supabase
-          .from('categories')
+          .from('global_categories')
           .select('id, name')
           .in('id', categoryIds);
           
@@ -295,7 +296,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
           const categoryMap = new Map(categoryData.map(c => [c.id, c.name]));
           setExpenses(prev => prev.map(expense => ({
             ...expense,
-            category_name: expense.category_id ? (categoryMap.get(expense.category_id) || 'Uncategorized') : 'Uncategorized'
+            category_name: expense.global_category_id ? (categoryMap.get(expense.global_category_id) || 'Uncategorized') : 'Uncategorized'
           })));
         }
       }
@@ -346,8 +347,9 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
       console.log('📊 Dashboard global categories response:', { data: globalCategoriesData, error: globalCategoriesError });
 
       if (!globalCategoriesError && globalCategoriesData && globalCategoriesData.length > 0) {
+        // FIXED: Use the global_categories.id instead of the mapping id
         const transformedCategories = globalCategoriesData.map((item: any) => ({
-          id: item.id,
+          id: item.global_categories.id, // Use the actual category ID, not the mapping ID
           name: item.global_categories.name,
           color: item.global_categories.color
         }));
@@ -359,17 +361,20 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
         console.log('❌ Error details:', globalCategoriesError);
         console.log('📊 Data received:', globalCategoriesData);
         
+        // FIXED: Use global_categories table directly instead of old categories table
+        console.log('📡 Attempting to fetch global categories directly for dashboard...');
         const { data: fallbackData, error: fallbackError } = await supabase
-          .from('categories')
+          .from('global_categories')
           .select('id, name, color')
-          .eq('workspace_id', activeWorkspace)
           .order('name');
         
         if (fallbackError) {
-          console.error('❌ Fallback categories fetch failed:', fallbackError);
+          console.error('❌ Direct global categories fetch failed for dashboard:', fallbackError);
+          // Set empty categories array as last resort
+          setCategories([]);
         } else {
           setCategories(fallbackData || []);
-          console.log('✅ Fetched fallback categories for dashboard:', fallbackData?.length || 0);
+          console.log('✅ Fetched global categories directly for dashboard:', fallbackData?.length || 0);
         }
       }
 
@@ -583,7 +588,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
         merchant: 'New Receipt',
         amount: Math.random() * 100,
         txn_date: new Date().toISOString().split('T')[0],
-        category_id: 'cat1', // AI categorization
+        global_category_id: 'cat1', // AI categorization
         category_confidence: Math.floor(Math.random() * 30) + 70,
         source: 'upload',
         status: 'unreviewed',
@@ -613,7 +618,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
         merchant: 'Voice Entry',
         amount: Math.random() * 50,
         txn_date: new Date().toISOString().split('T')[0],
-        category_id: 'cat2', // AI categorization
+        global_category_id: 'cat2', // AI categorization
         category_confidence: Math.floor(Math.random() * 25) + 75,
         source: 'voice',
         status: 'unreviewed',
@@ -742,7 +747,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
     const category = categories.find(c => c.id === categoryId);
     setExpenses(prev => prev.map(e => 
       e.id === expenseId 
-        ? { ...e, category_id: categoryId, category_name: category?.name }
+        ? { ...e, global_category_id: categoryId, category_name: category?.name }
         : e
     ));
   };
@@ -757,6 +762,48 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
         : e
     ));
   };
+
+  // Helper function to check if all items are selected
+  const isAllSelected = selectedExpenses.length === unreviewedExpenses.length && unreviewedExpenses.length > 0;
+  
+  // Helper function to select all unreviewed expenses
+  const selectAllExpenses = () => {
+    const allExpenseIds = unreviewedExpenses.map(expense => expense.id);
+    setSelectedExpenses(allExpenseIds);
+  };
+  
+  // Helper function to clear all selections
+  const clearAllSelections = () => {
+    setSelectedExpenses([]);
+  };
+  
+  // Helper function to handle individual expense selection
+  const handleExpenseSelection = (expenseId: string, isChecked: boolean) => {
+    if (isChecked) {
+      setSelectedExpenses(prev => [...prev, expenseId]);
+    } else {
+      setSelectedExpenses(prev => prev.filter(id => id !== expenseId));
+    }
+  };
+  
+  // Keyboard shortcut for select all (Ctrl/Cmd + A)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        if (currentView === 'inbox' && unreviewedExpenses.length > 0) {
+          if (isAllSelected) {
+            clearAllSelections();
+          } else {
+            selectAllExpenses();
+          }
+        }
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [currentView, unreviewedExpenses, isAllSelected]);
 
   // Bulk actions
   const handleBulkAccept = async () => {
@@ -1050,10 +1097,10 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Primary Action Row */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 space-y-4 sm:space-y-0">
-          {/* Add Expense Dropdown */}
+          {/* Add Expense Button */}
           <div className="relative">
             <button
-              onClick={() => setShowAddDropdown(!showAddDropdown)}
+              onClick={() => setShowAddExpenseModal(true)}
               disabled={isActionsDisabled}
               title={isActionsDisabled ? "Select a business to start adding expenses" : ""}
               className={`px-6 py-3 rounded-xl font-semibold focus:ring-2 focus:ring-offset-2 transition-all shadow-lg flex items-center space-x-2 ${
@@ -1064,70 +1111,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
             >
               <Plus className="w-5 h-5" />
               <span>Add Expense</span>
-              <ChevronDown className="w-4 h-4" />
             </button>
-
-            {showAddDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-brand-soft-gray/20 py-2 z-50">
-                <button
-                  onClick={() => {
-                    setShowAddDropdown(false);
-                    isActionsDisabled ? handleDisabledAction() : fileInputRef.current?.click();
-                  }}
-                  disabled={isActionsDisabled}
-                  className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3"
-                >
-                  <Upload className="w-5 h-5 text-brand-dark-teal" />
-                  <div>
-                    <div className="font-medium text-brand-text-dark">Upload Receipt</div>
-                    <div className="text-sm text-brand-text-muted">Drag & drop or click to upload</div>
-                  </div>
-                </button>
-                
-                <button 
-                  onClick={() => {
-                    setShowAddDropdown(false);
-                    isActionsDisabled ? handleDisabledAction() : handleCameraCapture();
-                  }}
-                  className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3">
-                  <Camera className="w-5 h-5 text-brand-dark-teal" />
-                  <div>
-                    <div className="font-medium text-brand-text-dark">Camera Capture</div>
-                    <div className="text-sm text-brand-text-muted">Take photo with camera</div>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setShowAddDropdown(false);
-                    isActionsDisabled ? handleDisabledAction() : handleVoiceRecord();
-                  }}
-                  disabled={isRecording || isActionsDisabled}
-                  className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3 disabled:opacity-50"
-                >
-                  <Mic className={`w-5 h-5 text-brand-dark-teal ${isRecording ? 'animate-pulse' : ''}`} />
-                  <div>
-                    <div className="font-medium text-brand-text-dark">
-                      {isRecording ? 'Recording...' : 'Voice Capture'}
-                    </div>
-                    <div className="text-sm text-brand-text-muted">Press and hold to record</div>
-                  </div>
-                </button>
-                
-                <button 
-                  onClick={() => {
-                    setShowAddDropdown(false);
-                    isActionsDisabled ? handleDisabledAction() : handleManualEntry();
-                  }}
-                  className="w-full px-4 py-3 text-left hover:bg-brand-soft-gray/10 flex items-center space-x-3">
-                  <Edit3 className="w-5 h-5 text-brand-dark-teal" />
-                  <div>
-                    <div className="font-medium text-brand-text-dark">Manual Entry</div>
-                    <div className="text-sm text-brand-text-muted">Enter expense details</div>
-                  </div>
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Quick Links */}
@@ -1368,23 +1352,83 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
           <div className="space-y-6">
             {/* Bulk Actions */}
             {selectedExpenses.length > 0 && (
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-brand-soft-gray/20 flex items-center justify-between">
-                <span className="text-sm text-brand-text-dark">
-                  {selectedExpenses.length} item{selectedExpenses.length !== 1 ? 's' : ''} selected
-                </span>
+              <div className="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm flex items-center justify-between animate-in slide-in-from-top-2 duration-200">
+                <div className="flex items-center space-x-3">
+                  <Check className="w-5 h-5 text-green-600" />
+                  <span className="text-sm font-medium text-green-800">
+                    {selectedExpenses.length} item{selectedExpenses.length !== 1 ? 's' : ''} selected
+                  </span>
+                </div>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={handleBulkAccept}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors flex items-center space-x-2"
                   >
+                    <Check className="w-4 h-4" />
                     Accept All
                   </button>
                   <button
                     onClick={handleBulkDelete}
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors flex items-center space-x-2"
                   >
+                    <Trash2 className="w-4 h-4" />
                     Delete All
                   </button>
+                </div>
+              </div>
+            )}
+
+                        {/* Select All Button */}
+            {unreviewedExpenses.length > 0 && (
+              <div className={`p-4 rounded-xl shadow-sm border transition-all duration-200 ${
+                selectedExpenses.length > 0 
+                  ? 'bg-brand-dark-teal/5 border-brand-dark-teal/20' 
+                  : 'bg-white border-brand-soft-gray/20'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          selectAllExpenses();
+                        } else {
+                          clearAllSelections();
+                        }
+                      }}
+                      className="rounded border-brand-soft-gray/50 text-brand-dark-teal focus:ring-brand-dark-teal w-4 h-4"
+                    />
+                    <label 
+                      className="text-sm font-medium text-brand-text-dark cursor-pointer hover:text-brand-dark-teal transition-colors"
+                      onClick={() => {
+                        if (isAllSelected) {
+                          clearAllSelections();
+                        } else {
+                          selectAllExpenses();
+                        }
+                      }}
+                    >
+                      {isAllSelected ? 'Deselect All' : 'Select All'} ({unreviewedExpenses.length} items)
+                    </label>
+                    <span className="text-xs text-brand-text-muted">
+                      ⌘A to toggle
+                    </span>
+                  </div>
+                  
+                  {selectedExpenses.length > 0 && (
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-brand-text-muted">
+                        {selectedExpenses.length} of {unreviewedExpenses.length} selected
+                      </span>
+                      <button
+                        onClick={clearAllSelections}
+                        className="text-sm text-brand-text-muted hover:text-brand-text-dark transition-colors px-2 py-1 rounded hover:bg-brand-soft-gray/20"
+                      >
+                        Clear Selection
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1407,14 +1451,8 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
                         <input
                           type="checkbox"
                           checked={selectedExpenses.includes(expense.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedExpenses(prev => [...prev, expense.id]);
-                            } else {
-                              setSelectedExpenses(prev => prev.filter(id => id !== expense.id));
-                            }
-                          }}
-                          className="mt-1 rounded border-brand-soft-gray/50 text-brand-dark-teal focus:ring-brand-dark-teal"
+                          onChange={(e) => handleExpenseSelection(expense.id, e.target.checked)}
+                          className="mt-1 rounded border-brand-soft-gray/50 text-brand-dark-teal focus:ring-brand-dark-teal w-4 h-4"
                         />
                         
                         <div className="flex-1">
@@ -1455,7 +1493,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
                             
                             {/* Category Selector */}
                             <select 
-                              value={expense.category_id}
+                              value={expense.global_category_id}
                               onChange={(e) => updateExpenseCategory(expense.id, e.target.value)}
                               className="px-3 py-2 border border-brand-soft-gray/30 rounded-lg focus:ring-2 focus:ring-brand-dark-teal focus:border-transparent"
                             >
@@ -1718,12 +1756,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
           onClick={() => setWorkspaceDropdownOpen(false)}
         />
       )}
-      {showAddDropdown && (
-        <div 
-          className="fixed inset-0 z-30" 
-          onClick={() => setShowAddDropdown(false)}
-        />
-      )}
+
 
       {/* Business Creation Modal */}
       <BusinessModal
@@ -1731,6 +1764,18 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
         onClose={() => setShowCreateBusinessModal(false)}
         onBusinessCreated={handleBusinessCreated}
         user={user}
+      />
+
+      {/* Add Expense Modal */}
+      <AddExpenseModal
+        isOpen={showAddExpenseModal}
+        onClose={() => setShowAddExpenseModal(false)}
+        activeWorkspaceId={activeWorkspace}
+        currentUser={user}
+        onExpenseAdded={() => {
+          setShowAddExpenseModal(false);
+          fetchExpenses(); // Refresh the expenses list
+        }}
       />
     </div>
   );
