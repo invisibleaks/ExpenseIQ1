@@ -36,6 +36,7 @@ import {
 import { supabase } from '../lib/supabase';
 import BusinessModal from './BusinessModal';
 import AddExpenseModal from './AddExpenseModal';
+import ConversationalExpenseChat from './ConversationalExpenseChat';
 
 interface Expense {
   id: string;
@@ -87,6 +88,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
   const [currentView, setCurrentView] = useState<'dashboard' | 'inbox' | 'expenses' | 'manual-entry' | 'profile'>('dashboard');
   const [selectedExpenses, setSelectedExpenses] = useState<string[]>([]);
   const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
+  const [showChatInterface, setShowChatInterface] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [showBusinessModal, setShowBusinessModal] = useState(false);
@@ -1097,8 +1099,8 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Primary Action Row */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 space-y-4 sm:space-y-0">
-          {/* Add Expense Button */}
-          <div className="relative">
+          {/* Add Expense Buttons */}
+          <div className="flex items-center space-x-3">
             <button
               onClick={() => setShowAddExpenseModal(true)}
               disabled={isActionsDisabled}
@@ -1111,6 +1113,22 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
             >
               <Plus className="w-5 h-5" />
               <span>Add Expense</span>
+            </button>
+            
+            {/* Chat Interface Button */}
+            <button
+              onClick={() => setShowChatInterface(true)}
+              disabled={isActionsDisabled}
+              title={isActionsDisabled ? "Select a business to start using chat interface" : "Try our new AI chat interface"}
+              className={`px-6 py-3 rounded-xl font-semibold focus:ring-2 focus:ring-offset-2 transition-all shadow-lg flex items-center space-x-2 ${
+                isActionsDisabled
+                  ? 'bg-brand-soft-gray text-brand-text-muted cursor-not-allowed'
+                  : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 focus:ring-blue-500 transform hover:scale-105 hover:shadow-xl'
+              }`}
+            >
+              <Brain className="w-5 h-5" />
+              <span>Chat Interface</span>
+              <span className="text-xs bg-white/20 px-2 py-1 rounded-full">Beta</span>
             </button>
           </div>
 
@@ -1774,6 +1792,17 @@ const AccountPage: React.FC<AccountPageProps> = ({ onBack, onLogout, user }) => 
         currentUser={user}
         onExpenseAdded={() => {
           setShowAddExpenseModal(false);
+          fetchExpenses(); // Refresh the expenses list
+        }}
+      />
+
+      {/* Conversational Expense Chat */}
+      <ConversationalExpenseChat
+        isOpen={showChatInterface}
+        onClose={() => setShowChatInterface(false)}
+        activeWorkspaceId={activeWorkspace}
+        currentUser={user}
+        onExpenseAdded={() => {
           fetchExpenses(); // Refresh the expenses list
         }}
       />
