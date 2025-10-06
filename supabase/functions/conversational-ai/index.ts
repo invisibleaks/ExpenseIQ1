@@ -228,9 +228,20 @@ function buildConversationPrompt(context: ConversationContext): string {
   const categoryNames = context.availableCategories.map(cat => cat.name).join(', ')
   const currentExpense = JSON.stringify(context.currentExpense, null, 2)
   
+  // Get current date information
+  const now = new Date()
+  const currentDate = now.toISOString().split('T')[0] // YYYY-MM-DD format
+  const currentDateFormatted = now.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  })
+  
   return `You are an AI assistant specialized in helping users add expense entries through natural conversation.
 
 CURRENT CONTEXT:
+- Today's Date: ${currentDate} (${currentDateFormatted})
 - Conversation Step: ${context.conversationStep}
 - Current Expense Data: ${currentExpense}
 - Available Categories: ${categoryNames}
@@ -245,7 +256,12 @@ EXTRACTION GUIDELINES:
 - Amount: Extract numbers, handle "USD 1000", "$50", "fifty dollars", etc.
 - Merchant: Business names, stores, service providers
 - Description: What was purchased or the purpose of the expense
-- Date: Parse "yesterday", "last week", "29th Sep 2025", relative dates
+- Date: Parse relative dates based on TODAY'S DATE (${currentDate}):
+  * "today" = ${currentDate}
+  * "yesterday" = calculate 1 day before today
+  * "last week" = calculate 7 days before today
+  * "X days ago" = calculate X days before today
+  * Specific dates like "29th Sep 2025" = convert to YYYY-MM-DD format
 - Category: Match to available categories based on context
 - Notes: Additional context or details
 
@@ -263,22 +279,25 @@ RESPONSE STYLE:
 - Patient with corrections
 - Confident in suggestions but flexible
 
-EXAMPLES:
-User: "I bought lunch at McDonald's for $12 yesterday"
-→ Extract: amount="12", merchant="McDonald's", description="lunch", date="2025-10-05"
-→ Response: "Great! I found $12 at McDonald's for lunch yesterday. I'd suggest 'Food & Dining' category. Should I save this expense?"
+EXAMPLES (using today's date ${currentDate}):
+User: "I bought lunch at McDonald's for $12 today"
+→ Extract: amount="12", merchant="McDonald's", description="lunch", date="${currentDate}"
+→ Response: "Great! I found $12 at McDonald's for lunch today. I'd suggest 'Food & Dining' category. Should I save this expense?"
+
+User: "I spent $50 at Amazon yesterday"
+→ Extract: amount="50", merchant="Amazon", description="purchase", date="[calculate yesterday from ${currentDate}]"
+→ Response: "I found $50 at Amazon yesterday. What did you purchase?"
 
 User: "Change the amount to $15"
 → Update: amount="15" (keep other data)
-→ Response: "Updated the amount to $15. Here's your expense: $15 at McDonald's for lunch yesterday, Food & Dining category. Should I save this now?"
-
-User: "No, change the date to last week"
-→ Update: date="2025-09-29" (calculate last week)
-→ Response: "Updated the date to last week. Your expense: $15 at McDonald's for lunch on 29/09/2025, Food & Dining category. Ready to save?"
+→ Response: "Updated the amount to $15. Should I save this expense now?"
 
 IMPORTANT:
 - Always merge new data with existing expense data
-- Calculate relative dates accurately (yesterday, last week, etc.)
+- Calculate relative dates accurately based on TODAY'S DATE (${currentDate}):
+  * "today" = ${currentDate}
+  * "yesterday" = subtract 1 day from ${currentDate}
+  * "last week" = subtract 7 days from ${currentDate}
 - Suggest appropriate categories based on merchant/description
 - Be helpful but don't overwhelm with too many questions at once
 - Handle "yes/no" responses appropriately in confirmation step`

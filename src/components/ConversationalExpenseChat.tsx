@@ -286,6 +286,7 @@ const ConversationalExpenseChat: React.FC<ConversationalExpenseChatProps> = ({
   const [conversationContext, setConversationContext] = useState<ConversationContext | null>(null);
   
   const messageIdCounter = useRef(0);
+  const processingRef = useRef<Set<string>>(new Set()); // Track messages being processed
 
   // Load categories and payment methods
   useEffect(() => {
@@ -371,7 +372,21 @@ const ConversationalExpenseChat: React.FC<ConversationalExpenseChatProps> = ({
       content,
       timestamp: new Date()
     };
-    setMessages(prev => [...prev, message]);
+    setMessages(prev => {
+      // Check if this exact message already exists (prevent duplicates)
+      const isDuplicate = prev.some(msg => 
+        msg.type === 'user' && 
+        msg.content === content && 
+        Math.abs(msg.timestamp.getTime() - message.timestamp.getTime()) < 5000 // Within 5 seconds
+      );
+      
+      if (isDuplicate) {
+        console.log('🚫 Duplicate user message detected, skipping:', content);
+        return prev;
+      }
+      
+      return [...prev, message];
+    });
   };
 
   const addSystemMessage = (content: string) => {
@@ -381,11 +396,51 @@ const ConversationalExpenseChat: React.FC<ConversationalExpenseChatProps> = ({
       content,
       timestamp: new Date()
     };
-    setMessages(prev => [...prev, message]);
+    setMessages(prev => {
+      // Check if this exact message already exists (prevent duplicates)
+      const isDuplicate = prev.some(msg => 
+        msg.type === 'system' && 
+        msg.content === content && 
+        Math.abs(msg.timestamp.getTime() - message.timestamp.getTime()) < 5000 // Within 5 seconds
+      );
+      
+      if (isDuplicate) {
+        console.log('🚫 Duplicate system message detected, skipping:', content);
+        return prev;
+      }
+      
+      return [...prev, message];
+    });
   };
 
   const handleSendMessage = async (message: string) => {
     console.log('🚀 handleSendMessage called with:', message);
+    
+    // More robust duplicate prevention
+    const messageKey = message.trim().toLowerCase();
+    const now = Date.now();
+    
+    // Check if we're already processing this exact message
+    if (processingRef.current.has(messageKey)) {
+      console.log('⚠️ Message already being processed, skipping duplicate');
+      return;
+    }
+    
+    // Check if we recently processed this exact message (within last 10 seconds)
+    const recentMessages = Array.from(processingRef.current).filter(key => 
+      key.startsWith(messageKey) && 
+      (now - parseInt(key.split('_').pop() || '0')) < 10000
+    );
+    
+    if (recentMessages.length > 0) {
+      console.log('⚠️ Recently processed similar message, skipping duplicate');
+      return;
+    }
+    
+    const uniqueKey = `${messageKey}_${now}`;
+    processingRef.current.add(uniqueKey);
+    
+    // Add user message first
     addUserMessage(message);
     setIsProcessing(true);
 
@@ -401,6 +456,15 @@ const ConversationalExpenseChat: React.FC<ConversationalExpenseChatProps> = ({
       addSystemMessage("Sorry, I had trouble processing that. Could you try again?");
     } finally {
       setIsProcessing(false);
+      processingRef.current.delete(uniqueKey); // Clean up
+      
+      // Clean up old entries (older than 30 seconds)
+      const cutoff = now - 30000;
+      const keysToDelete = Array.from(processingRef.current).filter(key => {
+        const timestamp = parseInt(key.split('_').pop() || '0');
+        return timestamp < cutoff;
+      });
+      keysToDelete.forEach(key => processingRef.current.delete(key));
     }
   };
 
@@ -420,7 +484,7 @@ const ConversationalExpenseChat: React.FC<ConversationalExpenseChatProps> = ({
         currentContext
       );
 
-      // Update conversation context
+      // Update conversation context (for internal tracking only)
       const updatedContext: ConversationContext = {
         ...currentContext,
         messages: [
@@ -451,7 +515,7 @@ const ConversationalExpenseChat: React.FC<ConversationalExpenseChatProps> = ({
       // Update conversation step
       setConversationStep(response.nextStep);
 
-      // Add AI response to chat
+      // Add AI response to chat (only once)
       addSystemMessage(response.message);
 
       // Handle completion
@@ -719,6 +783,7 @@ const ConversationalExpenseChat: React.FC<ConversationalExpenseChatProps> = ({
     setIsProcessing(false);
     setIsSubmitting(false);
     setShowSuccessToast(false);
+    processingRef.current.clear(); // Clear processing tracker
     onClose();
   };
 
