@@ -1,3 +1,4 @@
+
 ExpenseIQ1
 
 Pallavi created one branch :
@@ -12,3 +13,5 @@ git commit -m "testing"
 git push origin "expenseIQ-pallavi"
 readme changed
 
+
+Expense IQ Test created for Team collaboration on Oct 5th 2025 at 6:09 PM by Abhishek
